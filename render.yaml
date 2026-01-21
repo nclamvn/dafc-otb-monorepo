@@ -58,5 +58,5 @@ databases:
   - name: dafc-otb-db
     databaseName: dafc_otb
     region: singapore
-    plan: starter
+    plan: free
     postgresMajorVersion: "15"
