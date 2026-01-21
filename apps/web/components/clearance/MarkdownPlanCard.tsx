@@ -5,24 +5,25 @@ import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, Target, TrendingDown, Zap, ArrowRight } from 'lucide-react';
+import { Calendar, Target, TrendingDown, Zap, ArrowRight, Loader2 } from 'lucide-react';
 import type { MarkdownPlan, MarkdownPlanStatus } from '@/types/clearance';
 
 const STATUS_CONFIG: Record<MarkdownPlanStatus, { label: string; color: string }> = {
-  DRAFT: { label: 'Draft', color: 'bg-gray-100 text-gray-800' },
-  PENDING_APPROVAL: { label: 'Pending', color: 'bg-yellow-100 text-yellow-800' },
-  APPROVED: { label: 'Approved', color: 'bg-blue-100 text-blue-800' },
-  ACTIVE: { label: 'Active', color: 'bg-green-100 text-green-800' },
-  COMPLETED: { label: 'Completed', color: 'bg-purple-100 text-purple-800' },
-  CANCELLED: { label: 'Cancelled', color: 'bg-red-100 text-red-800' },
+  DRAFT: { label: 'Bản nháp', color: 'bg-gray-100 text-gray-800' },
+  PENDING_APPROVAL: { label: 'Chờ duyệt', color: 'bg-yellow-100 text-yellow-800' },
+  APPROVED: { label: 'Đã duyệt', color: 'bg-blue-100 text-blue-800' },
+  ACTIVE: { label: 'Hoạt động', color: 'bg-green-100 text-green-800' },
+  COMPLETED: { label: 'Hoàn thành', color: 'bg-purple-100 text-purple-800' },
+  CANCELLED: { label: 'Đã hủy', color: 'bg-red-100 text-red-800' },
 };
 
 interface Props {
   plan: MarkdownPlan;
   onOptimize: () => void;
+  isOptimizing?: boolean;
 }
 
-export function MarkdownPlanCard({ plan, onOptimize }: Props) {
+export function MarkdownPlanCard({ plan, onOptimize, isOptimizing }: Props) {
   const status = STATUS_CONFIG[plan.status];
 
   return (
@@ -59,13 +60,17 @@ export function MarkdownPlanCard({ plan, onOptimize }: Props) {
 
         <div className="flex gap-2">
           {plan.status === 'DRAFT' && (
-            <Button variant="outline" size="sm" className="flex-1" onClick={onOptimize}>
-              <Zap className="h-4 w-4 mr-1" />Optimize
+            <Button variant="outline" size="sm" className="flex-1" onClick={onOptimize} disabled={isOptimizing}>
+              {isOptimizing ? (
+                <><Loader2 className="h-4 w-4 mr-1 animate-spin" />Đang tối ưu...</>
+              ) : (
+                <><Zap className="h-4 w-4 mr-1" />Tối ưu</>
+              )}
             </Button>
           )}
           <Link href={`/clearance/${plan.id}`} className="flex-1">
             <Button variant="outline" size="sm" className="w-full">
-              View<ArrowRight className="h-4 w-4 ml-1" />
+              Xem<ArrowRight className="h-4 w-4 ml-1" />
             </Button>
           </Link>
         </div>

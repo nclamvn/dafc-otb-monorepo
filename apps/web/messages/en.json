@@ -75,7 +75,11 @@
     "profile": "Profile",
     "toggleMenu": "Toggle menu",
     "toggleTheme": "Toggle theme",
-    "aiFeatures": "AI Features"
+    "aiFeatures": "AI Features",
+    "operations": "Operations",
+    "clearance": "Clearance",
+    "replenishment": "Replenishment",
+    "forecasting": "Forecasting"
   },
   "auth": {
     "login": "Login",

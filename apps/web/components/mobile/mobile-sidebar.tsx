@@ -44,6 +44,15 @@ import {
 import { useState } from 'react';
 import { signOut, useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { User, CreditCard } from 'lucide-react';
 
 interface MobileSidebarProps {
   open: boolean;
@@ -140,14 +149,15 @@ export function MobileSidebar({ open, onClose }: MobileSidebarProps) {
       <div className="flex flex-col h-full">
         {/* Logo */}
         <div className="flex items-center justify-between px-4 py-3 border-b">
-          <Link href="/" onClick={onClose}>
+          <Link href="/" onClick={onClose} className="flex items-center justify-start">
             <Image
-              src="/logo.svg"
+              src="/logo.png"
               alt="DAFC"
-              width={120}
-              height={32}
+              width={200}
+              height={107}
               priority
-              style={{ height: 'auto' }}
+              unoptimized
+              style={{ width: '90px', height: 'auto' }}
             />
           </Link>
         </div>
@@ -155,15 +165,61 @@ export function MobileSidebar({ open, onClose }: MobileSidebarProps) {
         {/* User info */}
         {session?.user && (
           <div className="px-4 py-3 border-b bg-muted/30">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-medium">
-                {session.user.name?.charAt(0).toUpperCase() || 'U'}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{session.user.name}</p>
-                <p className="text-xs text-muted-foreground truncate">{session.user.email}</p>
-              </div>
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-3 w-full hover:opacity-80 transition-opacity">
+                  <div className="h-10 w-10 rounded-full bg-[hsl(30_43%_72%)] flex items-center justify-center text-black font-semibold">
+                    {session.user.name?.charAt(0).toUpperCase() || 'U'}
+                  </div>
+                  <div className="flex-1 min-w-0 text-left">
+                    <p className="text-sm font-medium truncate">{session.user.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">{session.user.email}</p>
+                  </div>
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="start" side="bottom" sideOffset={8}>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{session.user.name}</p>
+                    <p className="text-xs leading-none text-muted-foreground">{session.user.email}</p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/settings/profile" onClick={onClose} className="cursor-pointer">
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Hồ sơ cá nhân</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/settings" onClick={onClose} className="cursor-pointer">
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Cài đặt</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/settings/billing" onClick={onClose} className="cursor-pointer">
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    <span>Thanh toán</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/help" onClick={onClose} className="cursor-pointer">
+                    <HelpCircle className="mr-2 h-4 w-4" />
+                    <span>Trợ giúp</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => signOut({ callbackUrl: '/login' })}
+                  className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Đăng xuất</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         )}
 
@@ -221,10 +277,7 @@ export function MobileSidebar({ open, onClose }: MobileSidebarProps) {
           <Collapsible open={aiOpen} onOpenChange={setAiOpen}>
             <CollapsibleTrigger className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-muted-foreground hover:bg-muted/50 hover:text-foreground w-full">
               <Bot className="h-5 w-5 flex-shrink-0" />
-              <span className="flex-1 text-left">{t('aiFeatures')}</span>
-              <span className="px-2 py-0.5 text-[10px] font-semibold uppercase bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-full">
-                AI
-              </span>
+              <span className="flex-1 text-left uppercase font-semibold">{t('aiFeatures')}</span>
               <ChevronDown className={cn('h-4 w-4 transition-transform', aiOpen && 'rotate-180')} />
             </CollapsibleTrigger>
             <CollapsibleContent className="bg-muted/20">
@@ -254,22 +307,12 @@ export function MobileSidebar({ open, onClose }: MobileSidebarProps) {
         </nav>
 
         {/* Footer */}
-        <div className="border-t p-4 space-y-3">
+        <div className="border-t p-4">
           {/* Language switcher */}
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">{tCommon('language')}</span>
             <LanguageSwitcher variant="compact" />
           </div>
-
-          {/* Logout */}
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => signOut({ callbackUrl: '/login' })}
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            {t('logout')}
-          </Button>
         </div>
       </div>
     </SlidePanel>

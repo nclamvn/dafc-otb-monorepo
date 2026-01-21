@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { useSession, signOut } from 'next-auth/react';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard,
@@ -34,7 +35,10 @@ import {
   TrendingDown,
   Boxes,
   LineChart,
+  LogOut,
+  Settings,
 } from 'lucide-react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   Collapsible,
   CollapsibleContent,
@@ -46,7 +50,16 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
+import { User, CreditCard, HelpCircle } from 'lucide-react';
 
 const navigation = [
   { key: 'dashboard', href: '/', icon: LayoutDashboard },
@@ -82,9 +95,9 @@ const aiItems = [
 ];
 
 const operationsItems = [
-  { key: 'clearance', label: 'Clearance', href: '/clearance', icon: TrendingDown },
-  { key: 'replenishment', label: 'Replenishment', href: '/replenishment', icon: Boxes },
-  { key: 'forecasting', label: 'Forecasting', href: '/forecasting', icon: LineChart },
+  { key: 'clearance', href: '/clearance', icon: TrendingDown },
+  { key: 'replenishment', href: '/replenishment', icon: Boxes },
+  { key: 'forecasting', href: '/forecasting', icon: LineChart },
 ];
 
 interface SidebarProps {
@@ -94,10 +107,20 @@ interface SidebarProps {
 
 export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname();
+  const { data: session } = useSession();
   const t = useTranslations('navigation');
   const tMasterData = useTranslations('masterData');
   const tAnalytics = useTranslations('analytics');
   const tUi = useTranslations('ui');
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   const [masterDataOpen, setMasterDataOpen] = useState(
     pathname.startsWith('/master-data')
@@ -141,14 +164,15 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
           ) : (
             /* Expanded: Logo + Name + Toggle */
             <>
-              <Link href="/" className="flex items-center">
+              <Link href="/" className="flex items-center justify-start">
                 <Image
-                  src="/logo.svg"
+                  src="/logo.png"
                   alt="DAFC"
-                  width={140}
-                  height={36}
+                  width={200}
+                  height={107}
                   priority
-                  style={{ height: 'auto' }}
+                  unoptimized
+                  style={{ width: '100px', height: 'auto' }}
                 />
               </Link>
               {onToggleCollapse && (
@@ -186,7 +210,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                     'h-5 w-5 flex-shrink-0',
                     isActive ? 'text-primary' : 'text-muted-foreground/70 group-hover:text-foreground dark:group-hover:text-white'
                   )} />
-                  {!collapsed && <span className="flex-1">{t(item.key)}</span>}
+                  {!collapsed && <span className="flex-1 uppercase font-semibold tracking-wide">{t(item.key)}</span>}
                 </Link>
               );
 
@@ -248,7 +272,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                         'h-5 w-5 flex-shrink-0',
                         pathname.startsWith('/master-data') ? 'text-primary' : 'text-muted-foreground/70 group-hover:text-foreground dark:group-hover:text-white'
                       )} />
-                      <span className="flex-1 text-left">{t('masterData')}</span>
+                      <span className="flex-1 text-left uppercase font-semibold tracking-wide">{t('masterData')}</span>
                       <ChevronDown
                         className={cn(
                           'h-4 w-4 text-muted-foreground/70 transition-transform',
@@ -323,10 +347,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                         'h-5 w-5 flex-shrink-0',
                         pathname.startsWith('/analytics') ? 'text-primary' : 'text-muted-foreground/70 group-hover:text-foreground dark:group-hover:text-white'
                       )} />
-                      <span className="flex-1 text-left">{t('analytics')}</span>
-                      <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide bg-dafc-gold/15 text-dafc-gold border border-dafc-gold/30 rounded-full mr-1">
-                        {tUi('new')}
-                      </span>
+                      <span className="flex-1 text-left uppercase font-semibold tracking-wide">{t('analytics')}</span>
                       <ChevronDown
                         className={cn(
                           'h-4 w-4 text-muted-foreground/70 transition-transform',
@@ -401,10 +422,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                         'h-5 w-5 flex-shrink-0',
                         (pathname.startsWith('/ai-') || pathname === '/predictive-alerts') ? 'text-primary' : 'text-muted-foreground/70 group-hover:text-foreground dark:group-hover:text-white'
                       )} />
-                      <span className="flex-1 text-left">AI</span>
-                      <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-full mr-1">
-                        AI
-                      </span>
+                      <span className="flex-1 text-left uppercase font-semibold tracking-wide">AI</span>
                       <ChevronDown
                         className={cn(
                           'h-4 w-4 text-muted-foreground/70 transition-transform',
@@ -458,7 +476,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                     </Link>
                   </TooltipTrigger>
                   <TooltipContent side="right" sideOffset={10}>
-                    Operations
+                    {t('operations')}
                   </TooltipContent>
                 </Tooltip>
               ) : (
@@ -479,10 +497,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                         'h-5 w-5 flex-shrink-0',
                         (pathname === '/clearance' || pathname === '/replenishment' || pathname === '/forecasting') ? 'text-primary' : 'text-muted-foreground/70 group-hover:text-foreground dark:group-hover:text-white'
                       )} />
-                      <span className="flex-1 text-left">Operations</span>
-                      <span className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide bg-dafc-green/15 text-dafc-green-light border border-dafc-green/30 rounded-full mr-1">
-                        {tUi('new')}
-                      </span>
+                      <span className="flex-1 text-left uppercase font-semibold tracking-wide">{t('operations')}</span>
                       <ChevronDown
                         className={cn(
                           'h-4 w-4 text-muted-foreground/70 transition-transform',
@@ -506,7 +521,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                           )}
                         >
                           <item.icon className={cn('h-4 w-4', isActive ? 'text-primary dark:text-primary-foreground' : 'text-muted-foreground/70 group-hover:text-foreground dark:group-hover:text-white')} />
-                          <span>{item.label}</span>
+                          <span>{t(item.key)}</span>
                         </Link>
                       );
                     })}
@@ -517,6 +532,86 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
           </ul>
         </nav>
 
+        {/* User Section at Bottom */}
+        {session?.user && (
+          <div className={cn(
+            "border-t border-border p-3",
+            collapsed ? "flex justify-center" : ""
+          )}>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                {collapsed ? (
+                  <button className="flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity">
+                    <Avatar className="h-9 w-9">
+                      <AvatarFallback className="bg-[hsl(30_43%_72%)] text-black font-semibold">
+                        {session.user.name ? getInitials(session.user.name) : 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                ) : (
+                  <button className="flex items-center gap-3 w-full p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
+                    <Avatar className="h-9 w-9">
+                      <AvatarFallback className="bg-[hsl(30_43%_72%)] text-black font-semibold">
+                        {session.user.name ? getInitials(session.user.name) : 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0 text-left">
+                      <p className="text-sm font-medium truncate">{session.user.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{session.user.email}</p>
+                    </div>
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                )}
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                className="w-56"
+                align="start"
+                side={collapsed ? "right" : "top"}
+                sideOffset={4}
+              >
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{session.user.name}</p>
+                    <p className="text-xs leading-none text-muted-foreground">{session.user.email}</p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/settings/profile" className="cursor-pointer">
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Hồ sơ cá nhân</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/settings" className="cursor-pointer">
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Cài đặt</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/settings/billing" className="cursor-pointer">
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    <span>Thanh toán</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/help" className="cursor-pointer">
+                    <HelpCircle className="mr-2 h-4 w-4" />
+                    <span>Trợ giúp</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => signOut({ callbackUrl: '/login' })}
+                  className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Đăng xuất</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
       </aside>
     </TooltipProvider>
   );

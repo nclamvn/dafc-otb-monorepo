@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { ColumnDef } from '@tanstack/react-table';
 import {
@@ -15,7 +15,6 @@ import {
   Bell,
   Filter,
 } from 'lucide-react';
-import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,7 +33,6 @@ import {
 } from '@/components/ui/select';
 import { PageHeader } from '@/components/shared/page-header';
 import { DataTable } from '@/components/shared/data-table';
-import { Season, Brand, Division } from '@/types';
 
 interface WSSIRecord {
   id: string;
@@ -68,97 +66,180 @@ interface WSSIRecord {
   }>;
 }
 
-interface WSSISummary {
-  year: number;
-  recordCount: number;
-  totals: {
-    totalSalesPlan: number;
-    totalSalesActual: number;
-    totalIntakePlan: number;
-    totalIntakeActual: number;
-    averageWoC: number;
-    averageSellThrough: number;
-    averageSalesVariance: number;
-  };
+// Demo data
+function generateDemoData(): WSSIRecord[] {
+  const brands = [
+    { id: '1', name: 'Nike', code: 'NK' },
+    { id: '2', name: 'Adidas', code: 'AD' },
+    { id: '3', name: 'Puma', code: 'PM' },
+  ];
+
+  const categories = [
+    { id: '1', name: 'Footwear', code: 'FW' },
+    { id: '2', name: 'Apparel', code: 'AP' },
+    { id: '3', name: 'Accessories', code: 'AC' },
+  ];
+
+  const divisions = [
+    { id: '1', name: 'North', code: 'N' },
+    { id: '2', name: 'South', code: 'S' },
+  ];
+
+  const records: WSSIRecord[] = [];
+  const currentYear = new Date().getFullYear();
+
+  for (let week = 1; week <= 12; week++) {
+    brands.forEach((brand, brandIdx) => {
+      categories.forEach((category, catIdx) => {
+        const salesPlan = 50000 + Math.random() * 100000;
+        const salesActual = salesPlan * (0.85 + Math.random() * 0.3);
+        const variance = ((salesActual - salesPlan) / salesPlan) * 100;
+        const intakePlan = 40000 + Math.random() * 80000;
+        const intakeActual = intakePlan * (0.9 + Math.random() * 0.2);
+        const closingStock = 200000 + Math.random() * 300000;
+        const woc = closingStock / (salesActual / 4);
+
+        const alerts: WSSIRecord['alerts'] = [];
+        if (woc < 3) {
+          alerts.push({
+            id: `alert-${week}-${brandIdx}-${catIdx}-1`,
+            alertType: 'LOW_STOCK',
+            severity: 'HIGH',
+            title: 'Low stock alert',
+            isAcknowledged: false,
+          });
+        }
+        if (variance < -15) {
+          alerts.push({
+            id: `alert-${week}-${brandIdx}-${catIdx}-2`,
+            alertType: 'SALES_VARIANCE',
+            severity: 'MEDIUM',
+            title: 'Sales below plan',
+            isAcknowledged: Math.random() > 0.5,
+          });
+        }
+
+        records.push({
+          id: `wssi-${week}-${brand.id}-${category.id}`,
+          year: currentYear,
+          weekNumber: week,
+          weekStartDate: new Date(currentYear, 0, 1 + (week - 1) * 7).toISOString(),
+          weekEndDate: new Date(currentYear, 0, 7 + (week - 1) * 7).toISOString(),
+          division: divisions[brandIdx % 2],
+          brand,
+          category,
+          subcategory: null,
+          season: { id: '1', name: 'Spring/Summer 2026', code: 'SS26' },
+          location: null,
+          openingStockValue: closingStock * 1.1,
+          closingStockValue: closingStock,
+          salesPlanValue: salesPlan,
+          salesActualValue: salesActual,
+          intakePlanValue: intakePlan,
+          intakeActualValue: intakeActual,
+          weeksOfCover: woc,
+          salesVariancePct: variance,
+          intakeVariancePct: ((intakeActual - intakePlan) / intakePlan) * 100,
+          sellThroughPct: (salesActual / (closingStock + salesActual)) * 100,
+          forecastType: week <= 4 ? 'ACTUAL' : week <= 8 ? 'REFORECAST' : 'PLAN',
+          alerts,
+        });
+      });
+    });
+  }
+
+  return records;
 }
+
+const demoRecords = generateDemoData();
+
+const demoBrands = [
+  { id: '1', name: 'Nike', code: 'NK' },
+  { id: '2', name: 'Adidas', code: 'AD' },
+  { id: '3', name: 'Puma', code: 'PM' },
+];
+
+const demoDivisions = [
+  { id: '1', name: 'North', code: 'N' },
+  { id: '2', name: 'South', code: 'S' },
+];
+
+const demoSeasons = [
+  { id: '1', name: 'Spring/Summer 2026', code: 'SS26' },
+  { id: '2', name: 'Fall/Winter 2025', code: 'FW25' },
+];
 
 export default function WSSIPage() {
   const router = useRouter();
   const currentYear = new Date().getFullYear();
-
-  const [records, setRecords] = useState<WSSIRecord[]>([]);
-  const [summary, setSummary] = useState<WSSISummary | null>(null);
-  const [seasons, setSeasons] = useState<Season[]>([]);
-  const [brands, setBrands] = useState<Brand[]>([]);
-  const [divisions, setDivisions] = useState<Division[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [alertCount, setAlertCount] = useState(0);
 
   // Filters
   const [yearFilter, setYearFilter] = useState<number>(currentYear);
   const [seasonFilter, setSeasonFilter] = useState<string>('all');
   const [brandFilter, setBrandFilter] = useState<string>('all');
   const [divisionFilter, setDivisionFilter] = useState<string>('all');
-  const [weekStart, setWeekStart] = useState<string>('');
-  const [weekEnd, setWeekEnd] = useState<string>('');
 
-  const fetchData = useCallback(async () => {
-    try {
-      setIsLoading(true);
+  // Filter records
+  const filteredRecords = useMemo(() => {
+    return demoRecords.filter((record) => {
+      if (record.year !== yearFilter) return false;
+      if (brandFilter !== 'all' && record.brand.id !== brandFilter) return false;
+      if (divisionFilter !== 'all' && record.division.id !== divisionFilter) return false;
+      if (seasonFilter !== 'all' && record.season.id !== seasonFilter) return false;
+      return true;
+    });
+  }, [yearFilter, brandFilter, divisionFilter, seasonFilter]);
 
-      const params = new URLSearchParams();
-      params.append('year', yearFilter.toString());
-      if (seasonFilter !== 'all') params.append('seasonId', seasonFilter);
-      if (brandFilter !== 'all') params.append('brandId', brandFilter);
-      if (divisionFilter !== 'all') params.append('divisionId', divisionFilter);
-      if (weekStart) params.append('weekStart', weekStart);
-      if (weekEnd) params.append('weekEnd', weekEnd);
+  // Calculate summary
+  const summary = useMemo(() => {
+    if (filteredRecords.length === 0) return null;
 
-      const [recordsRes, summaryRes, seasonsRes, brandsRes, divisionsRes, alertsRes] = await Promise.all([
-        fetch(`/api/v1/wssi?${params.toString()}`),
-        fetch(`/api/v1/wssi/summary?year=${yearFilter}`),
-        fetch('/api/v1/seasons'),
-        fetch('/api/v1/brands'),
-        fetch('/api/v1/divisions'),
-        fetch('/api/v1/wssi/alerts?acknowledged=false&limit=100'),
-      ]);
+    const totals = filteredRecords.reduce(
+      (acc, record) => ({
+        totalSalesPlan: acc.totalSalesPlan + record.salesPlanValue,
+        totalSalesActual: acc.totalSalesActual + record.salesActualValue,
+        totalIntakePlan: acc.totalIntakePlan + record.intakePlanValue,
+        totalIntakeActual: acc.totalIntakeActual + record.intakeActualValue,
+        sumWoC: acc.sumWoC + record.weeksOfCover,
+        sumSellThrough: acc.sumSellThrough + record.sellThroughPct,
+        sumVariance: acc.sumVariance + record.salesVariancePct,
+      }),
+      { totalSalesPlan: 0, totalSalesActual: 0, totalIntakePlan: 0, totalIntakeActual: 0, sumWoC: 0, sumSellThrough: 0, sumVariance: 0 }
+    );
 
-      const recordsData = await recordsRes.json();
-      const summaryData = await summaryRes.json();
-      const seasonsData = await seasonsRes.json();
-      const brandsData = await brandsRes.json();
-      const divisionsData = await divisionsRes.json();
-      const alertsData = await alertsRes.json();
+    return {
+      year: yearFilter,
+      recordCount: filteredRecords.length,
+      totals: {
+        totalSalesPlan: totals.totalSalesPlan,
+        totalSalesActual: totals.totalSalesActual,
+        totalIntakePlan: totals.totalIntakePlan,
+        totalIntakeActual: totals.totalIntakeActual,
+        averageWoC: totals.sumWoC / filteredRecords.length,
+        averageSellThrough: totals.sumSellThrough / filteredRecords.length,
+        averageSalesVariance: totals.sumVariance / filteredRecords.length,
+      },
+    };
+  }, [filteredRecords, yearFilter]);
 
-      if (recordsData.success !== false) setRecords(recordsData.data || []);
-      if (summaryData.success !== false) setSummary(summaryData);
-      if (seasonsData.success) setSeasons(seasonsData.data);
-      if (brandsData.success) setBrands(brandsData.data);
-      if (divisionsData.success) setDivisions(divisionsData.data);
-      if (alertsData.success !== false) setAlertCount(alertsData.meta?.total || 0);
-    } catch (error) {
-      console.error('Failed to fetch WSSI data:', error);
-      toast.error('Failed to load WSSI data');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [yearFilter, seasonFilter, brandFilter, divisionFilter, weekStart, weekEnd]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  const alertCount = useMemo(() => {
+    return filteredRecords.reduce(
+      (count, record) => count + record.alerts.filter(a => !a.isAcknowledged).length,
+      0
+    );
+  }, [filteredRecords]);
 
   const getVarianceBadge = (variance: number) => {
     if (variance >= 10) {
       return (
-        <Badge className="bg-green-100 text-green-800">
+        <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
           <TrendingUp className="mr-1 h-3 w-3" />
           +{variance.toFixed(1)}%
         </Badge>
       );
     } else if (variance <= -10) {
       return (
-        <Badge className="bg-red-100 text-red-800">
+        <Badge className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
           <TrendingDown className="mr-1 h-3 w-3" />
           {variance.toFixed(1)}%
         </Badge>
@@ -173,26 +254,35 @@ export default function WSSIPage() {
 
   const getWoCBadge = (woc: number) => {
     if (woc < 3) {
-      return <Badge className="bg-red-100 text-red-800">{woc.toFixed(1)} wks</Badge>;
+      return <Badge className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">{woc.toFixed(1)} wks</Badge>;
     } else if (woc > 8) {
-      return <Badge className="bg-yellow-100 text-yellow-800">{woc.toFixed(1)} wks</Badge>;
+      return <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">{woc.toFixed(1)} wks</Badge>;
     }
-    return <Badge className="bg-green-100 text-green-800">{woc.toFixed(1)} wks</Badge>;
+    return <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">{woc.toFixed(1)} wks</Badge>;
   };
 
   const getForecastTypeBadge = (type: string) => {
     const colors: Record<string, string> = {
-      PLAN: 'bg-blue-100 text-blue-800',
-      REFORECAST: 'bg-purple-100 text-purple-800',
-      ACTUAL: 'bg-green-100 text-green-800',
+      PLAN: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+      REFORECAST: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
+      ACTUAL: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
     };
     return <Badge className={colors[type]}>{type}</Badge>;
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+      notation: 'compact',
+      maximumFractionDigits: 1,
+    }).format(value);
   };
 
   const columns: ColumnDef<WSSIRecord>[] = [
     {
       accessorKey: 'weekNumber',
-      header: 'Week',
+      header: 'Tuần',
       cell: ({ row }) => (
         <div>
           <p className="font-medium">W{row.original.weekNumber}</p>
@@ -203,12 +293,12 @@ export default function WSSIPage() {
     {
       id: 'brand',
       accessorFn: (row) => row.brand?.name || '',
-      header: 'Brand',
+      header: 'Thương hiệu',
       cell: ({ row }) => (
         <div>
           <p className="font-medium">{row.original.brand?.name}</p>
           <p className="text-xs text-muted-foreground">
-            {row.original.category?.name || 'All Categories'}
+            {row.original.category?.name || 'Tất cả danh mục'}
           </p>
         </div>
       ),
@@ -216,27 +306,27 @@ export default function WSSIPage() {
     },
     {
       accessorKey: 'salesActualValue',
-      header: 'Sales Actual',
+      header: 'Doanh số thực',
       cell: ({ row }) => (
         <div className="text-right">
-          <p className="font-medium">${Number(row.original.salesActualValue).toLocaleString()}</p>
+          <p className="font-medium">{formatCurrency(row.original.salesActualValue)}</p>
           <p className="text-xs text-muted-foreground">
-            Plan: ${Number(row.original.salesPlanValue).toLocaleString()}
+            KH: {formatCurrency(row.original.salesPlanValue)}
           </p>
         </div>
       ),
     },
     {
       accessorKey: 'salesVariancePct',
-      header: 'Sales Var %',
+      header: 'Chênh lệch %',
       cell: ({ row }) => getVarianceBadge(Number(row.original.salesVariancePct)),
     },
     {
       accessorKey: 'closingStockValue',
-      header: 'Closing Stock',
+      header: 'Tồn kho',
       cell: ({ row }) => (
         <span className="font-medium">
-          ${Number(row.original.closingStockValue).toLocaleString()}
+          {formatCurrency(row.original.closingStockValue)}
         </span>
       ),
     },
@@ -252,12 +342,12 @@ export default function WSSIPage() {
     },
     {
       accessorKey: 'forecastType',
-      header: 'Type',
+      header: 'Loại',
       cell: ({ row }) => getForecastTypeBadge(row.original.forecastType),
     },
     {
       accessorKey: 'alerts',
-      header: 'Alerts',
+      header: 'Cảnh báo',
       cell: ({ row }) => {
         const activeAlerts = row.original.alerts?.filter(a => !a.isAcknowledged) || [];
         if (activeAlerts.length === 0) return null;
@@ -283,11 +373,11 @@ export default function WSSIPage() {
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => router.push(`/wssi/${record.id}`)}>
                 <Eye className="mr-2 h-4 w-4" />
-                View Details
+                Xem chi tiết
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => router.push(`/wssi/${record.id}?reforecast=true`)}>
                 <RefreshCw className="mr-2 h-4 w-4" />
-                Reforecast
+                Dự báo lại
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -300,11 +390,11 @@ export default function WSSIPage() {
     <div className="space-y-6">
       <PageHeader
         title="WSSI Dashboard"
-        description="Weekly Sales Stock Intake - Monitor in-season performance and stock health"
+        description="Báo cáo Doanh số - Tồn kho - Nhập hàng theo tuần"
       >
         <Button variant="outline" onClick={() => router.push('/wssi/alerts')}>
           <Bell className="mr-2 h-4 w-4" />
-          Alerts
+          Cảnh báo
           {alertCount > 0 && (
             <Badge variant="destructive" className="ml-2">
               {alertCount}
@@ -317,7 +407,7 @@ export default function WSSIPage() {
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Sales vs Plan</CardTitle>
+            <CardTitle className="text-sm font-medium">Doanh số vs Kế hoạch</CardTitle>
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -327,29 +417,29 @@ export default function WSSIPage() {
                 : '0%'}
             </div>
             <p className="text-xs text-muted-foreground">
-              Actual: ${(summary?.totals.totalSalesActual || 0).toLocaleString()}
+              Thực tế: {formatCurrency(summary?.totals.totalSalesActual || 0)}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Avg Weeks of Cover</CardTitle>
+            <CardTitle className="text-sm font-medium">Tuần tồn kho (WoC)</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {summary?.totals.averageWoC?.toFixed(1) || '0'} wks
+              {summary?.totals.averageWoC?.toFixed(1) || '0'} tuần
             </div>
             <p className="text-xs text-muted-foreground">
-              Target: 4-6 weeks
+              Mục tiêu: 4-6 tuần
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Sell-Through Rate</CardTitle>
+            <CardTitle className="text-sm font-medium">Tỷ lệ Sell-Through</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -357,20 +447,20 @@ export default function WSSIPage() {
               {summary?.totals.averageSellThrough?.toFixed(1) || '0'}%
             </div>
             <p className="text-xs text-muted-foreground">
-              {summary?.recordCount || 0} weeks analyzed
+              {summary?.recordCount || 0} bản ghi
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Active Alerts</CardTitle>
+            <CardTitle className="text-sm font-medium">Cảnh báo hoạt động</CardTitle>
             <AlertTriangle className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-600">{alertCount}</div>
             <p className="text-xs text-muted-foreground">
-              Requires attention
+              Cần xử lý
             </p>
           </CardContent>
         </Card>
@@ -380,7 +470,7 @@ export default function WSSIPage() {
       <div className="flex flex-wrap gap-4">
         <Select value={yearFilter.toString()} onValueChange={(v) => setYearFilter(parseInt(v))}>
           <SelectTrigger className="w-[120px]">
-            <SelectValue placeholder="Year" />
+            <SelectValue placeholder="Năm" />
           </SelectTrigger>
           <SelectContent>
             {[currentYear - 1, currentYear, currentYear + 1].map((year) => (
@@ -393,11 +483,11 @@ export default function WSSIPage() {
 
         <Select value={divisionFilter} onValueChange={setDivisionFilter}>
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Division" />
+            <SelectValue placeholder="Khu vực" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Divisions</SelectItem>
-            {divisions.map((division) => (
+            <SelectItem value="all">Tất cả khu vực</SelectItem>
+            {demoDivisions.map((division) => (
               <SelectItem key={division.id} value={division.id}>
                 {division.name}
               </SelectItem>
@@ -407,11 +497,11 @@ export default function WSSIPage() {
 
         <Select value={brandFilter} onValueChange={setBrandFilter}>
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Brand" />
+            <SelectValue placeholder="Thương hiệu" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Brands</SelectItem>
-            {brands.map((brand) => (
+            <SelectItem value="all">Tất cả thương hiệu</SelectItem>
+            {demoBrands.map((brand) => (
               <SelectItem key={brand.id} value={brand.id}>
                 {brand.name}
               </SelectItem>
@@ -421,11 +511,11 @@ export default function WSSIPage() {
 
         <Select value={seasonFilter} onValueChange={setSeasonFilter}>
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Season" />
+            <SelectValue placeholder="Mùa" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Seasons</SelectItem>
-            {seasons.map((season) => (
+            <SelectItem value="all">Tất cả mùa</SelectItem>
+            {demoSeasons.map((season) => (
               <SelectItem key={season.id} value={season.id}>
                 {season.code}
               </SelectItem>
@@ -433,19 +523,19 @@ export default function WSSIPage() {
           </SelectContent>
         </Select>
 
-        <Button variant="outline" onClick={fetchData}>
+        <Button variant="outline" onClick={() => {}}>
           <Filter className="mr-2 h-4 w-4" />
-          Apply
+          Áp dụng
         </Button>
       </div>
 
       {/* Data Table */}
       <DataTable
         columns={columns}
-        data={records}
+        data={filteredRecords}
         searchKey="brand"
-        searchPlaceholder="Search by brand..."
-        isLoading={isLoading}
+        searchPlaceholder="Tìm theo thương hiệu..."
+        isLoading={false}
       />
     </div>
   );

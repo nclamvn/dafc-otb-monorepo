@@ -1,12 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { TrendingDown, Package, AlertTriangle, Plus, Play, CheckCircle } from 'lucide-react';
-import { clearanceApi } from '@/lib/api-client';
+import { TrendingDown, AlertTriangle, Plus, Play, Loader2 } from 'lucide-react';
 import { MarkdownPlanCard } from './MarkdownPlanCard';
 import { OptimizationResults } from './OptimizationResults';
 import { SimulationTool } from './SimulationTool';
@@ -17,32 +14,184 @@ interface Props {
   seasonId: string;
 }
 
+// Demo data generator
+function generateDemoPlans(): MarkdownPlan[] {
+  const today = new Date();
+  const nextMonth = new Date(today);
+  nextMonth.setMonth(nextMonth.getMonth() + 1);
+  const twoMonths = new Date(today);
+  twoMonths.setMonth(twoMonths.getMonth() + 2);
+
+  return [
+    {
+      id: 'plan-1',
+      planName: 'SS25 End of Season Clearance',
+      planType: 'SEASONAL',
+      brandId: 'brand-1',
+      seasonId: 'season-1',
+      status: 'DRAFT',
+      planStartDate: today.toISOString(),
+      planEndDate: nextMonth.toISOString(),
+      targetSellThroughPct: 85,
+      maxMarkdownPct: 50,
+      phases: [
+        { id: 'p1', phaseName: 'Phase 1', phaseOrder: 1, startDate: today.toISOString(), endDate: nextMonth.toISOString(), markdownPct: 20 },
+        { id: 'p2', phaseName: 'Phase 2', phaseOrder: 2, startDate: today.toISOString(), endDate: nextMonth.toISOString(), markdownPct: 30 },
+        { id: 'p3', phaseName: 'Phase 3', phaseOrder: 3, startDate: today.toISOString(), endDate: nextMonth.toISOString(), markdownPct: 50 },
+      ],
+      createdAt: today.toISOString(),
+    },
+    {
+      id: 'plan-2',
+      planName: 'Slow Movers Q1 Markdown',
+      planType: 'CLEARANCE',
+      brandId: 'brand-1',
+      seasonId: 'season-1',
+      status: 'ACTIVE',
+      planStartDate: today.toISOString(),
+      planEndDate: twoMonths.toISOString(),
+      targetSellThroughPct: 75,
+      maxMarkdownPct: 40,
+      phases: [
+        { id: 'p1', phaseName: 'Phase 1', phaseOrder: 1, startDate: today.toISOString(), endDate: nextMonth.toISOString(), markdownPct: 15 },
+        { id: 'p2', phaseName: 'Phase 2', phaseOrder: 2, startDate: today.toISOString(), endDate: nextMonth.toISOString(), markdownPct: 25 },
+      ],
+      createdAt: today.toISOString(),
+    },
+    {
+      id: 'plan-3',
+      planName: 'Size Break Clearance',
+      planType: 'CLEARANCE',
+      brandId: 'brand-1',
+      seasonId: 'season-1',
+      status: 'DRAFT',
+      planStartDate: nextMonth.toISOString(),
+      planEndDate: twoMonths.toISOString(),
+      targetSellThroughPct: 90,
+      maxMarkdownPct: 60,
+      phases: [
+        { id: 'p1', phaseName: 'Phase 1', phaseOrder: 1, startDate: today.toISOString(), endDate: nextMonth.toISOString(), markdownPct: 30 },
+        { id: 'p2', phaseName: 'Phase 2', phaseOrder: 2, startDate: today.toISOString(), endDate: nextMonth.toISOString(), markdownPct: 45 },
+        { id: 'p3', phaseName: 'Phase 3', phaseOrder: 3, startDate: today.toISOString(), endDate: nextMonth.toISOString(), markdownPct: 60 },
+      ],
+      createdAt: today.toISOString(),
+    },
+    {
+      id: 'plan-4',
+      planName: 'Category Exit Strategy',
+      planType: 'CLEARANCE',
+      brandId: 'brand-1',
+      seasonId: 'season-1',
+      status: 'COMPLETED',
+      planStartDate: today.toISOString(),
+      planEndDate: nextMonth.toISOString(),
+      targetSellThroughPct: 95,
+      maxMarkdownPct: 70,
+      phases: [
+        { id: 'p1', phaseName: 'Phase 1', phaseOrder: 1, startDate: today.toISOString(), endDate: nextMonth.toISOString(), markdownPct: 40 },
+        { id: 'p2', phaseName: 'Phase 2', phaseOrder: 2, startDate: today.toISOString(), endDate: nextMonth.toISOString(), markdownPct: 70 },
+      ],
+      createdAt: today.toISOString(),
+    },
+  ];
+}
+
+function generateDemoOptimizationResult(planId: string): OptimizationResult {
+  return {
+    planId,
+    totalSKUs: 156,
+    recommendations: [
+      {
+        id: 'rec-1',
+        skuId: 'sku-001',
+        skuCode: 'NK-AM90-BLK-42',
+        currentStock: 45,
+        currentWoC: 8.5,
+        currentSellThrough: 32,
+        recommendedAction: 'INCLUDE_PHASE_1',
+        recommendedMarkdownPct: 20,
+        predictedSellThrough: 85,
+        predictedRevenue: 125000000,
+        confidenceScore: 0.87,
+        isOverridden: false,
+      },
+      {
+        id: 'rec-2',
+        skuId: 'sku-002',
+        skuCode: 'NK-AF1-WHT-40',
+        currentStock: 78,
+        currentWoC: 12.3,
+        currentSellThrough: 18,
+        recommendedAction: 'IMMEDIATE_CLEAR',
+        recommendedMarkdownPct: 50,
+        predictedSellThrough: 92,
+        predictedRevenue: 89000000,
+        confidenceScore: 0.92,
+        isOverridden: false,
+      },
+      {
+        id: 'rec-3',
+        skuId: 'sku-003',
+        skuCode: 'AD-UB22-GRY-43',
+        currentStock: 23,
+        currentWoC: 4.2,
+        currentSellThrough: 65,
+        recommendedAction: 'NO_ACTION',
+        predictedSellThrough: 78,
+        predictedRevenue: 96000000,
+        confidenceScore: 0.75,
+        isOverridden: false,
+      },
+    ],
+    summary: {
+      byAction: {
+        'NO_ACTION': 45,
+        'INCLUDE_PHASE_1': 52,
+        'INCLUDE_PHASE_2': 28,
+        'INCLUDE_PHASE_3': 15,
+        'IMMEDIATE_CLEAR': 12,
+        'REMOVE_FROM_FLOOR': 4,
+      },
+      totalExpectedRevenue: 1250000000,
+      avgConfidence: 0.85,
+    },
+  };
+}
+
 export function ClearanceDashboard({ brandId, seasonId }: Props) {
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [optimizationResult, setOptimizationResult] = useState<OptimizationResult | null>(null);
-  const queryClient = useQueryClient();
+  const [plans, setPlans] = useState<MarkdownPlan[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isOptimizing, setIsOptimizing] = useState(false);
 
-  const { data: plansResponse, isLoading } = useQuery({
-    queryKey: ['clearance-plans', brandId, seasonId],
-    queryFn: () => clearanceApi.getPlans({ brandId, seasonId }),
-    enabled: !!brandId && !!seasonId,
-  });
+  // Load demo data on mount
+  useEffect(() => {
+    const loadPlans = async () => {
+      setIsLoading(true);
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+      setPlans(generateDemoPlans());
+      setIsLoading(false);
+    };
+    loadPlans();
+  }, [brandId, seasonId]);
 
-  const optimizeMutation = useMutation({
-    mutationFn: (planId: string) => clearanceApi.optimizePlan({ planId, strategy: 'BALANCED' }),
-    onSuccess: (response) => {
-      if (response.data) {
-        setOptimizationResult(response.data as unknown as OptimizationResult);
-      }
-    },
-  });
-
-  const plans = (plansResponse?.data || []) as MarkdownPlan[];
+  const handleOptimize = async (planId: string) => {
+    setIsOptimizing(true);
+    setSelectedPlanId(planId);
+    // Simulate optimization API call
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    const result = generateDemoOptimizationResult(planId);
+    setOptimizationResult(result);
+    setIsOptimizing(false);
+  };
 
   const summary = {
     totalPlans: plans.length,
     activePlans: plans.filter(p => p.status === 'ACTIVE').length,
-    skusByAction: {} as Record<string, number>,
+    draftPlans: plans.filter(p => p.status === 'DRAFT').length,
+    immediateAction: 12, // Demo value
   };
 
   return (
@@ -50,23 +199,23 @@ export function ClearanceDashboard({ brandId, seasonId }: Props) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Clearance Optimization</h1>
-          <p className="text-muted-foreground">AI-powered markdown strategy</p>
+          <h1 className="text-2xl font-bold">Tối ưu Xả hàng</h1>
+          <p className="text-muted-foreground">Chiến lược markdown AI</p>
         </div>
-        <Button><Plus className="h-4 w-4 mr-2" />New Plan</Button>
+        <Button><Plus className="h-4 w-4 mr-2" />Tạo mới</Button>
       </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">Total Plans</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground">Tổng kế hoạch</CardTitle>
           </CardHeader>
           <CardContent><div className="text-2xl font-bold">{summary.totalPlans}</div></CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">Active</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground">Đang hoạt động</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
@@ -77,25 +226,23 @@ export function ClearanceDashboard({ brandId, seasonId }: Props) {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">SKUs for Markdown</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground">Bản nháp</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
               <TrendingDown className="h-5 w-5 text-orange-500" />
-              <span className="text-2xl font-bold">
-                {Object.values(summary.skusByAction || {}).reduce((a: number, b: number) => a + b, 0)}
-              </span>
+              <span className="text-2xl font-bold">{summary.draftPlans}</span>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">Immediate Action</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground">Cần xử lý ngay</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-red-500" />
-              <span className="text-2xl font-bold text-red-600">{summary.skusByAction?.IMMEDIATE_CLEAR || 0}</span>
+              <span className="text-2xl font-bold text-red-600">{summary.immediateAction}</span>
             </div>
           </CardContent>
         </Card>
@@ -104,24 +251,25 @@ export function ClearanceDashboard({ brandId, seasonId }: Props) {
       {/* Plans List */}
       <Card>
         <CardHeader>
-          <CardTitle>Markdown Plans</CardTitle>
-          <CardDescription>Manage clearance strategies</CardDescription>
+          <CardTitle>Kế hoạch Markdown</CardTitle>
+          <CardDescription>Quản lý chiến lược xả hàng</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading...</div>
+            <div className="flex items-center justify-center py-8 text-muted-foreground">
+              <Loader2 className="h-6 w-6 animate-spin mr-2" />
+              Đang tải...
+            </div>
           ) : plans.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">No plans found</div>
+            <div className="text-center py-8 text-muted-foreground">Không có kế hoạch nào</div>
           ) : (
             <div className="grid grid-cols-2 gap-4">
               {plans.map((plan) => (
                 <MarkdownPlanCard
                   key={plan.id}
                   plan={plan}
-                  onOptimize={() => {
-                    setSelectedPlanId(plan.id);
-                    optimizeMutation.mutate(plan.id);
-                  }}
+                  onOptimize={() => handleOptimize(plan.id)}
+                  isOptimizing={isOptimizing && selectedPlanId === plan.id}
                 />
               ))}
             </div>

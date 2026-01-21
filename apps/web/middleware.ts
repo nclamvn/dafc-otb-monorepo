@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { auth } from '@/lib/auth';
 
 // Paths that don't need any middleware processing
-const skipPaths = ['/api', '/_next', '/favicon.ico', '/manifest.json', '/sw.js', '/icons', '/offline', '/logo.svg'];
+const skipPaths = ['/api', '/_next', '/favicon.ico', '/manifest.json', '/sw.js', '/icons', '/offline', '/logo.png'];
 
 // Auth-excluded paths (no authentication needed)
 const authExcludedPaths = ['/login', '/forgot-password', '/reset-password', '/register', '/offline'];
@@ -59,6 +59,6 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     // Match all paths except static files
-    '/((?!api|_next/static|_next/image|favicon.ico|manifest.json|sw.js|icons|logo.svg).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|manifest.json|sw.js|icons|logo.png).*)',
   ],
 };

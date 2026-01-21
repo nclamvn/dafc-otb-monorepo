@@ -51,13 +51,12 @@ export default function LoginPage() {
       <CardHeader className="text-center space-y-4">
         <div className="flex justify-center">
           <Image
-            src="/logo.svg"
+            src="/logo.png"
             alt="DAFC"
-            width={160}
-            height={48}
+            width={180}
+            height={52}
             priority
-            className="h-12 w-auto"
-            style={{ height: 'auto' }}
+            style={{ width: 'auto', height: 'auto' }}
           />
         </div>
         <div>

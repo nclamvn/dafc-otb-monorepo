@@ -1,21 +1,20 @@
 import { auth } from '@/lib/auth';
-import { Badge } from '@/components/ui/badge';
-import { TrendingUp } from 'lucide-react';
+import { Crown } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import {
-  StatsCard,
-  BudgetChart,
-  OTBTrendsChart,
+  DAFCKPICard,
+  DAFCSalesTrendChart,
+  DAFCCategoryTable,
+  DAFCAlertsPanel,
+  DAFCContextBar,
   ActivityFeed,
   QuickActions,
   AIInsightsWidget,
   PendingApprovals,
-  ProactiveAlertsWidget,
-  DemandForecastWidget,
 } from '@/components/dashboard';
 import type { ActivityItem, QuickAction, AIInsight, PendingApproval } from '@/components/dashboard';
 
-// Demo data for the enhanced dashboard
+// Demo data for the DAFC-styled dashboard
 function getDashboardData() {
   const stats = {
     brandsCount: 5,
@@ -23,27 +22,113 @@ function getDashboardData() {
     locationsCount: 8,
     usersCount: 24,
     currentSeason: { id: 'demo', name: 'Spring/Summer 2025', code: 'SS25', isCurrent: true },
-    totalBudget: 15000000,
-    budgetUtilized: 8500000,
+    totalBudget: 15000000000,
+    budgetUtilized: 8500000000,
     pendingApprovals: 7,
     activePlans: 12,
+    totalSales: 12500000000,
+    totalUnits: 45000,
+    avgMargin: 42.5,
+    sellThrough: 68.3,
   };
 
-  const budgetChartData = [
-    { name: 'Nike', allocated: 5000000, utilized: 3200000 },
-    { name: 'Adidas', allocated: 4000000, utilized: 2100000 },
-    { name: 'Puma', allocated: 3000000, utilized: 1800000 },
-    { name: 'Reebok', allocated: 2000000, utilized: 900000 },
-    { name: 'NB', allocated: 1000000, utilized: 500000 },
+  // Sales trend data
+  const salesTrendData = [
+    { period: 'Jan', sales: 1200000000, target: 1100000000, lastYear: 950000000 },
+    { period: 'Feb', sales: 1400000000, target: 1350000000, lastYear: 1100000000 },
+    { period: 'Mar', sales: 1600000000, target: 1550000000, lastYear: 1300000000 },
+    { period: 'Apr', sales: 1800000000, target: 1750000000, lastYear: 1450000000 },
+    { period: 'May', sales: 2000000000, target: 1900000000, lastYear: 1600000000 },
+    { period: 'Jun', sales: 2200000000, target: 2100000000, lastYear: 1800000000 },
   ];
 
-  const otbTrendsData = [
-    { month: 'Jan', planned: 1200000, actual: 1100000, forecast: 1150000 },
-    { month: 'Feb', planned: 1400000, actual: 1350000, forecast: 1380000 },
-    { month: 'Mar', planned: 1600000, actual: 1550000, forecast: 1580000 },
-    { month: 'Apr', planned: 1800000, actual: 1750000, forecast: 1780000 },
-    { month: 'May', planned: 2000000, actual: 1900000, forecast: 1950000 },
-    { month: 'Jun', planned: 2200000, actual: 0, forecast: 2150000 },
+  // Category performance data
+  const categoryData = [
+    { id: '1', name: 'Footwear', sales: 4500000000, target: 4200000000, units: 15000, margin: 45.2, trend: 12.5, status: 'exceeded' as const },
+    { id: '2', name: 'Apparel - Men', sales: 3200000000, target: 3500000000, units: 12000, margin: 38.5, trend: -2.3, status: 'at-risk' as const },
+    { id: '3', name: 'Apparel - Women', sales: 2800000000, target: 2800000000, units: 10000, margin: 42.1, trend: 5.8, status: 'on-track' as const },
+    { id: '4', name: 'Accessories', sales: 1500000000, target: 1400000000, units: 5000, margin: 52.3, trend: 8.9, status: 'exceeded' as const },
+    { id: '5', name: 'Equipment', sales: 500000000, target: 600000000, units: 3000, margin: 35.7, trend: -5.2, status: 'at-risk' as const },
+  ];
+
+  // Alerts data
+  const alerts = [
+    {
+      id: '1',
+      title: 'Low Stock Alert',
+      description: 'Nike Air Max 90 (Size 42) inventory below threshold. Immediate replenishment required.',
+      severity: 'critical' as const,
+      timestamp: new Date(Date.now() - 1000 * 60 * 15),
+      actionLabel: 'View Details',
+      actionUrl: '/inventory/nike-air-max-90',
+      dismissible: true,
+    },
+    {
+      id: '2',
+      title: 'Budget Threshold Warning',
+      description: 'Adidas SS25 budget utilization at 92%. Consider reallocation or approval for additional funds.',
+      severity: 'warning' as const,
+      timestamp: new Date(Date.now() - 1000 * 60 * 45),
+      actionLabel: 'Review Budget',
+      actionUrl: '/budgets/adidas-ss25',
+      dismissible: true,
+    },
+    {
+      id: '3',
+      title: 'OTB Plan Approved',
+      description: 'Nike SS25 V3 OTB plan has been approved by Finance Head and is now active.',
+      severity: 'success' as const,
+      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
+      dismissible: true,
+    },
+    {
+      id: '4',
+      title: 'New Size Profile Available',
+      description: 'AI-generated size profile for Women\'s Running category is ready for review.',
+      severity: 'info' as const,
+      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3),
+      actionLabel: 'Review Profile',
+      actionUrl: '/size-profiles/womens-running',
+      dismissible: true,
+    },
+  ];
+
+  // Context bar items
+  const contextItems = [
+    {
+      id: 'season',
+      label: 'Season',
+      value: 'SS25',
+      icon: 'calendar' as const,
+      options: [
+        { id: 'ss25', label: 'Spring/Summer 2025' },
+        { id: 'fw24', label: 'Fall/Winter 2024' },
+        { id: 'ss24', label: 'Spring/Summer 2024' },
+      ],
+    },
+    {
+      id: 'brand',
+      label: 'Brand',
+      value: 'All Brands',
+      icon: 'brand' as const,
+      options: [
+        { id: 'all', label: 'All Brands' },
+        { id: 'nike', label: 'Nike' },
+        { id: 'adidas', label: 'Adidas' },
+        { id: 'puma', label: 'Puma' },
+      ],
+    },
+    {
+      id: 'location',
+      label: 'Region',
+      value: 'Vietnam',
+      icon: 'location' as const,
+      options: [
+        { id: 'vn', label: 'Vietnam' },
+        { id: 'th', label: 'Thailand' },
+        { id: 'sg', label: 'Singapore' },
+      ],
+    },
   ];
 
   const activities: ActivityItem[] = [
@@ -76,23 +161,6 @@ function getDashboardData() {
       status: 'warning',
       user: 'Mike Johnson',
       link: '/sku-proposals',
-    },
-    {
-      id: '4',
-      type: 'approval',
-      action: 'Workflow Step Approved',
-      description: 'Puma SS25 budget passed Brand Manager review',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 6),
-      status: 'success',
-      user: 'Sarah Wilson',
-    },
-    {
-      id: '5',
-      type: 'system',
-      action: 'SLA Warning',
-      description: 'Reebok OTB plan approaching deadline',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 8),
-      status: 'warning',
     },
   ];
 
@@ -154,25 +222,6 @@ function getDashboardData() {
       },
       actionUrl: '/budgets/nike-ss25',
     },
-    {
-      id: '3',
-      type: 'recommendation',
-      title: 'Size Curve Optimization',
-      description: 'Consider adjusting size distribution for Women\'s Apparel - S/M sizes are consistently understocked.',
-      impact: 'medium',
-      actionUrl: '/otb-plans?analysis=sizing',
-    },
-    {
-      id: '4',
-      type: 'forecast',
-      title: 'Q2 Revenue Projection',
-      description: 'Based on current OTB plans and historical performance, Q2 is projected to exceed targets.',
-      metric: {
-        label: 'vs Target',
-        value: '+8.5%',
-        change: 8.5,
-      },
-    },
   ];
 
   const pendingApprovals: PendingApproval[] = [
@@ -184,7 +233,7 @@ function getDashboardData() {
       submittedBy: { name: 'Jane Doe' },
       submittedAt: new Date(Date.now() - 1000 * 60 * 60 * 2),
       priority: 'high',
-      amount: 4000000,
+      amount: 4000000000,
       href: '/budgets/adidas-ss25',
     },
     {
@@ -195,25 +244,17 @@ function getDashboardData() {
       submittedBy: { name: 'Mike Johnson' },
       submittedAt: new Date(Date.now() - 1000 * 60 * 60 * 5),
       priority: 'medium',
-      amount: 2500000,
+      amount: 2500000000,
       href: '/otb-plans/puma-v2',
-    },
-    {
-      id: '3',
-      type: 'sku',
-      title: 'Nike SKU Batch #42',
-      description: '156 SKUs pending approval',
-      submittedBy: { name: 'Sarah Wilson' },
-      submittedAt: new Date(Date.now() - 1000 * 60 * 60 * 8),
-      priority: 'low',
-      href: '/sku-proposals/nike-batch-42',
     },
   ];
 
   return {
     stats,
-    budgetChartData,
-    otbTrendsData,
+    salesTrendData,
+    categoryData,
+    alerts,
+    contextItems,
     activities,
     quickActions,
     aiInsights,
@@ -238,105 +279,126 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Welcome Section */}
+      {/* Welcome Section with DAFC Branding */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            {t('welcome', { name: session?.user?.name?.split(' ')[0] || 'User' })}
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            {t('overview')}
-          </p>
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[hsl(30_43%_72%)] to-[hsl(30_40%_62%)] flex items-center justify-center shadow-sm">
+            <Crown className="h-5 w-5 text-black/80" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-brand font-bold tracking-tight">
+              {t('welcome', { name: session?.user?.name?.split(' ')[0] || 'User' })}
+            </h1>
+            <p className="text-muted-foreground mt-0.5 text-sm">
+              {t('overview')}
+            </p>
+          </div>
         </div>
-        {stats.currentSeason && (
-          <Badge variant="secondary" className="text-sm px-3 py-1">
-            <TrendingUp className="h-4 w-4 mr-1" />
-            {stats.currentSeason.name}
-          </Badge>
-        )}
+        <div className="dafc-badge dafc-badge-gold">
+          <span>{stats.currentSeason.name}</span>
+        </div>
       </div>
 
-      {/* Key Stats */}
+      {/* Context Bar */}
+      <DAFCContextBar
+        items={data.contextItems}
+      />
+
+      {/* Key KPIs - DAFC Styled */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatsCard
-          title={t('totalBudget')}
-          value={formatCurrency(stats.totalBudget)}
-          description={t('currentSeasonAllocation')}
+        <DAFCKPICard
+          title="Total Sales"
+          value={formatCurrency(stats.totalSales)}
+          subtitle={`${stats.totalUnits.toLocaleString()} units sold`}
           icon="DollarSign"
-          color="green"
-          trend={{ value: 12, label: t('vsLastSeason') }}
-          sparklineData={[10, 12, 11, 14, 13, 15, 15]}
+          variant="gold"
+          trend={{ value: 12.5, label: 'vs last season' }}
+          sparklineData={[10, 12, 11, 14, 13, 15, 15.5]}
         />
-        <StatsCard
-          title={t('budgetUtilized')}
-          value={formatCurrency(stats.budgetUtilized)}
-          description={`${Math.round((stats.budgetUtilized / stats.totalBudget) * 100)}% ${t('ofTotal')}`}
-          icon="TrendingUp"
-          color="blue"
-          trend={{ value: 8, label: t('thisMonth') }}
-          sparklineData={[5, 6, 7, 7.5, 8, 8.2, 8.5]}
+        <DAFCKPICard
+          title="Budget Utilization"
+          value={`${Math.round((stats.budgetUtilized / stats.totalBudget) * 100)}%`}
+          subtitle={formatCurrency(stats.budgetUtilized)}
+          icon="Target"
+          variant="green"
+          trend={{ value: 8.2, label: 'this month' }}
+          sparklineData={[5, 6, 7, 7.5, 8, 8.2]}
         />
-        <StatsCard
-          title={t('pendingApprovals')}
-          value={stats.pendingApprovals}
-          description={t('itemsAwaitingReview')}
-          icon="FileText"
-          color="orange"
-          trend={{ value: -15, label: t('vsYesterday') }}
+        <DAFCKPICard
+          title="Avg Margin"
+          value={`${stats.avgMargin}%`}
+          subtitle="Across all categories"
+          icon="Percent"
+          variant="gold"
+          trend={{ value: 2.3, label: 'vs target' }}
         />
-        <StatsCard
-          title={t('activePlans')}
-          value={stats.activePlans}
-          description={t('otbPlansInProgress')}
-          icon="Package"
-          color="purple"
-          sparklineData={[8, 9, 10, 10, 11, 12, 12]}
+        <DAFCKPICard
+          title="Sell-Through"
+          value={`${stats.sellThrough}%`}
+          subtitle="Current season performance"
+          icon="ShoppingCart"
+          variant="green"
+          trend={{ value: -1.5, label: 'vs last week' }}
+          status="warning"
         />
       </div>
 
-      {/* Master Data Stats */}
+      {/* Secondary KPIs */}
       <div className="grid gap-4 md:grid-cols-4">
-        <StatsCard
+        <DAFCKPICard
           title={t('totalBrands')}
           value={stats.brandsCount}
-          description={t('activeBrands')}
+          subtitle={t('activeBrands')}
           icon="Building2"
-          color="blue"
+          variant="default"
         />
-        <StatsCard
+        <DAFCKPICard
           title={t('categories')}
           value={stats.categoriesCount}
-          description={t('productCategories')}
-          icon="FolderTree"
-          color="green"
+          subtitle={t('productCategories')}
+          icon="Package"
+          variant="default"
         />
-        <StatsCard
-          title={t('locations')}
-          value={stats.locationsCount}
-          description={t('salesLocations')}
-          icon="MapPin"
-          color="orange"
+        <DAFCKPICard
+          title={t('pendingApprovals')}
+          value={stats.pendingApprovals}
+          subtitle={t('itemsAwaitingReview')}
+          icon="Target"
+          variant="default"
+          status={stats.pendingApprovals > 5 ? 'warning' : undefined}
         />
-        <StatsCard
-          title={t('users')}
-          value={stats.usersCount}
-          description={t('activeUsers')}
-          icon="Users"
-          color="purple"
+        <DAFCKPICard
+          title={t('activePlans')}
+          value={stats.activePlans}
+          subtitle={t('otbPlansInProgress')}
+          icon="BarChart3"
+          variant="default"
         />
       </div>
 
       {/* Charts Row */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <BudgetChart data={data.budgetChartData} />
-        <OTBTrendsChart data={data.otbTrendsData} />
+        <DAFCSalesTrendChart
+          data={data.salesTrendData}
+          title="Sales Performance"
+          subtitle="Monthly sales vs target comparison"
+          variant="area"
+          showTarget={true}
+          showLastYear={true}
+        />
+        <DAFCAlertsPanel
+          alerts={data.alerts}
+          title="Active Alerts"
+          maxVisible={4}
+        />
       </div>
 
-      {/* Alerts & Forecast Row */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <ProactiveAlertsWidget />
-        <DemandForecastWidget />
-      </div>
+      {/* Category Performance Table */}
+      <DAFCCategoryTable
+        data={data.categoryData}
+        title="Category Performance"
+        subtitle="Sales performance by product category"
+      />
 
       {/* Insights & Activity Row */}
       <div className="grid gap-6 lg:grid-cols-2">

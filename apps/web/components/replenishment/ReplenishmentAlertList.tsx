@@ -1,47 +1,50 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { AlertTriangle, AlertCircle, Info, Check } from 'lucide-react';
-import { replenishmentApi } from '@/lib/api-client';
+import { AlertTriangle, AlertCircle, Info, Check, Loader2 } from 'lucide-react';
 import type { ReplenishmentAlert, AlertSeverity, ReplenishmentAlertType } from '@/types/replenishment';
 import { format } from 'date-fns';
 
 const SEVERITY_CONFIG: Record<AlertSeverity, { label: string; color: string; icon: typeof AlertTriangle }> = {
-  CRITICAL: { label: 'Critical', color: 'bg-red-100 text-red-800', icon: AlertTriangle },
-  WARNING: { label: 'Warning', color: 'bg-yellow-100 text-yellow-800', icon: AlertCircle },
-  INFO: { label: 'Info', color: 'bg-blue-100 text-blue-800', icon: Info },
+  CRITICAL: { label: 'Nghiêm trọng', color: 'bg-red-100 text-red-800', icon: AlertTriangle },
+  WARNING: { label: 'Cảnh báo', color: 'bg-yellow-100 text-yellow-800', icon: AlertCircle },
+  INFO: { label: 'Thông tin', color: 'bg-blue-100 text-blue-800', icon: Info },
 };
 
 const ALERT_TYPE_LABELS: Record<ReplenishmentAlertType, string> = {
-  BELOW_MIN_MOC: 'Below Min MOC',
-  APPROACHING_MIN: 'Approaching Min',
-  ABOVE_MAX_MOC: 'Above Max MOC',
-  STOCKOUT_RISK: 'Stockout Risk',
-  LEAD_TIME_RISK: 'Lead Time Risk',
+  BELOW_MIN_MOC: 'Dưới MOC tối thiểu',
+  APPROACHING_MIN: 'Gần mức tối thiểu',
+  ABOVE_MAX_MOC: 'Trên MOC tối đa',
+  STOCKOUT_RISK: 'Nguy cơ hết hàng',
+  LEAD_TIME_RISK: 'Rủi ro lead time',
 };
 
 function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(value);
+  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', minimumFractionDigits: 0 }).format(value);
 }
 
 interface Props {
   alerts: ReplenishmentAlert[];
   selectedAlerts: string[];
   onSelectChange: (selected: string[]) => void;
+  onAcknowledge?: (id: string) => void;
 }
 
-export function ReplenishmentAlertList({ alerts, selectedAlerts, onSelectChange }: Props) {
-  const queryClient = useQueryClient();
+export function ReplenishmentAlertList({ alerts, selectedAlerts, onSelectChange, onAcknowledge }: Props) {
+  const [acknowledging, setAcknowledging] = useState<string | null>(null);
 
-  const acknowledgeMutation = useMutation({
-    mutationFn: (id: string) => replenishmentApi.acknowledgeAlert(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['replenishment-dashboard'] }),
-  });
+  const handleAcknowledge = async (id: string) => {
+    setAcknowledging(id);
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    onAcknowledge?.(id);
+    setAcknowledging(null);
+  };
 
   const toggleSelect = (id: string) => {
     if (selectedAlerts.includes(id)) {
@@ -64,7 +67,7 @@ export function ReplenishmentAlertList({ alerts, selectedAlerts, onSelectChange 
       <Card>
         <CardContent className="py-12 text-center text-muted-foreground">
           <Check className="h-12 w-12 mx-auto mb-4 text-green-500" />
-          No active alerts. All inventory levels are within target range.
+          Không có cảnh báo nào. Tất cả mức tồn kho đều trong phạm vi mục tiêu.
         </CardContent>
       </Card>
     );
@@ -73,8 +76,8 @@ export function ReplenishmentAlertList({ alerts, selectedAlerts, onSelectChange 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Active Alerts</CardTitle>
-        <CardDescription>{alerts.length} alerts requiring attention</CardDescription>
+        <CardTitle>Cảnh báo hoạt động</CardTitle>
+        <CardDescription>{alerts.length} cảnh báo cần chú ý</CardDescription>
       </CardHeader>
       <CardContent>
         <Table>
@@ -86,15 +89,15 @@ export function ReplenishmentAlertList({ alerts, selectedAlerts, onSelectChange 
                   onCheckedChange={toggleSelectAll}
                 />
               </TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Severity</TableHead>
-              <TableHead className="text-right">Current MOC</TableHead>
-              <TableHead className="text-right">Target MOC</TableHead>
-              <TableHead className="text-right">Suggested Qty</TableHead>
-              <TableHead className="text-right">Value</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead className="w-20">Action</TableHead>
+              <TableHead>Danh mục</TableHead>
+              <TableHead>Loại</TableHead>
+              <TableHead>Mức độ</TableHead>
+              <TableHead className="text-right">MOC hiện tại</TableHead>
+              <TableHead className="text-right">MOC mục tiêu</TableHead>
+              <TableHead className="text-right">SL đề xuất</TableHead>
+              <TableHead className="text-right">Giá trị</TableHead>
+              <TableHead>Tạo lúc</TableHead>
+              <TableHead className="w-20">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -122,16 +125,20 @@ export function ReplenishmentAlertList({ alerts, selectedAlerts, onSelectChange 
                   <TableCell className="text-right font-mono">{alert.targetMOC.toFixed(1)}</TableCell>
                   <TableCell className="text-right font-mono">{alert.suggestedOrderQty.toLocaleString()}</TableCell>
                   <TableCell className="text-right">{formatCurrency(alert.suggestedOrderValue)}</TableCell>
-                  <TableCell>{format(new Date(alert.createdAt), 'MMM d, HH:mm')}</TableCell>
+                  <TableCell>{format(new Date(alert.createdAt), 'dd/MM, HH:mm')}</TableCell>
                   <TableCell>
                     {!alert.isAcknowledged && (
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => acknowledgeMutation.mutate(alert.id)}
-                        disabled={acknowledgeMutation.isPending}
+                        onClick={() => handleAcknowledge(alert.id)}
+                        disabled={acknowledging === alert.id}
                       >
-                        <Check className="h-4 w-4" />
+                        {acknowledging === alert.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Check className="h-4 w-4" />
+                        )}
                       </Button>
                     )}
                   </TableCell>

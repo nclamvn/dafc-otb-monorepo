@@ -75,7 +75,11 @@
     "profile": "Hồ sơ",
     "toggleMenu": "Mở menu",
     "toggleTheme": "Đổi giao diện",
-    "aiFeatures": "Tính năng AI"
+    "aiFeatures": "Tính năng AI",
+    "operations": "Vận hành",
+    "clearance": "Xả hàng",
+    "replenishment": "Bổ sung hàng",
+    "forecasting": "Dự báo"
   },
   "auth": {
     "login": "Đăng nhập",

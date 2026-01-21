@@ -1,17 +1,38 @@
 'use client';
 
 import { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
-import { Play, DollarSign, Package, Target } from 'lucide-react';
-import { clearanceApi } from '@/lib/api-client';
+import { Play, DollarSign, Package, Target, Loader2 } from 'lucide-react';
 import type { MarkdownSKUPlan, SimulationResult } from '@/types/clearance';
 
 function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(value);
+  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', minimumFractionDigits: 0 }).format(value);
+}
+
+// Demo simulation generator
+function generateDemoSimulation(markdownPct: number, skuCount: number): SimulationResult {
+  const baseRevenue = 500000000;
+  const revenueMultiplier = 1 + (markdownPct / 100) * 0.8; // Higher discount = more revenue from sell-through
+  const baseUnits = 1500;
+  const unitsMultiplier = 1 + (markdownPct / 100) * 1.2;
+  const baseSellThrough = 45;
+  const sellThroughBoost = markdownPct * 0.6;
+
+  return {
+    scenario: {
+      markdownPct,
+      skuIds: Array.from({ length: skuCount }, (_, i) => `sku-${i + 1}`),
+    },
+    results: {
+      totalRevenue: Math.round(baseRevenue * revenueMultiplier),
+      totalUnits: Math.round(baseUnits * unitsMultiplier),
+      avgSellThrough: Math.min(95, Math.round(baseSellThrough + sellThroughBoost)),
+      skuCount,
+    },
+  };
 }
 
 interface Props {
@@ -22,69 +43,70 @@ interface Props {
 export function SimulationTool({ planId, skus }: Props) {
   const [markdownPct, setMarkdownPct] = useState(20);
   const [result, setResult] = useState<SimulationResult | null>(null);
+  const [isRunning, setIsRunning] = useState(false);
 
   const skuIds = skus.filter(s => s.recommendedAction !== 'NO_ACTION').map(s => s.skuId);
 
-  const mutation = useMutation({
-    mutationFn: () => clearanceApi.simulateScenario({
-      planId,
-      globalMarkdownPct: markdownPct,
-      skuOverrides: skuIds.map(id => ({ skuId: id, markdownPct }))
-    }),
-    onSuccess: (response) => {
-      if (response.data) {
-        setResult(response.data as unknown as SimulationResult);
-      }
-    },
-  });
+  const handleRunSimulation = async () => {
+    setIsRunning(true);
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    const simulationResult = generateDemoSimulation(markdownPct, skuIds.length);
+    setResult(simulationResult);
+    setIsRunning(false);
+  };
 
   return (
     <div className="grid grid-cols-2 gap-6">
       <Card>
         <CardHeader>
-          <CardTitle>Simulation Parameters</CardTitle>
-          <CardDescription>Test what-if scenarios</CardDescription>
+          <CardTitle>Tham số Mô phỏng</CardTitle>
+          <CardDescription>Thử nghiệm các kịch bản what-if</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <label className="text-sm font-medium">Markdown %</label>
+              <label className="text-sm font-medium">Mức giảm giá %</label>
               <Badge variant="outline" className="text-lg font-bold">{markdownPct}%</Badge>
             </div>
             <Slider value={[markdownPct]} onValueChange={([v]) => setMarkdownPct(v)} min={0} max={70} step={5} />
           </div>
-          <div className="text-sm text-muted-foreground">Testing {skuIds.length} SKUs</div>
-          <Button className="w-full" onClick={() => mutation.mutate()} disabled={mutation.isPending}>
-            <Play className="h-4 w-4 mr-2" />{mutation.isPending ? 'Running...' : 'Run Simulation'}
+          <div className="text-sm text-muted-foreground">Thử nghiệm {skuIds.length} SKUs</div>
+          <Button className="w-full" onClick={handleRunSimulation} disabled={isRunning}>
+            {isRunning ? (
+              <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Đang chạy...</>
+            ) : (
+              <><Play className="h-4 w-4 mr-2" />Chạy mô phỏng</>
+            )}
           </Button>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Results</CardTitle>
-          <CardDescription>Projected outcomes</CardDescription>
+          <CardTitle>Kết quả</CardTitle>
+          <CardDescription>Dự báo kết quả</CardDescription>
         </CardHeader>
         <CardContent>
           {!result ? (
-            <div className="text-center py-12 text-muted-foreground">Run simulation to see results</div>
+            <div className="text-center py-12 text-muted-foreground">Chạy mô phỏng để xem kết quả</div>
           ) : (
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-green-50 rounded-lg p-4">
                 <div className="flex items-center gap-2 text-green-700 mb-2">
-                  <DollarSign className="h-5 w-5" />Revenue
+                  <DollarSign className="h-5 w-5" />Doanh thu
                 </div>
                 <div className="text-2xl font-bold text-green-700">{formatCurrency(result.results.totalRevenue)}</div>
               </div>
               <div className="bg-blue-50 rounded-lg p-4">
                 <div className="flex items-center gap-2 text-blue-700 mb-2">
-                  <Package className="h-5 w-5" />Units
+                  <Package className="h-5 w-5" />Số lượng
                 </div>
                 <div className="text-2xl font-bold text-blue-700">{result.results.totalUnits.toLocaleString()}</div>
               </div>
               <div className="bg-purple-50 rounded-lg p-4 col-span-2">
                 <div className="flex items-center gap-2 text-purple-700 mb-2">
-                  <Target className="h-5 w-5" />Avg Sell-Through
+                  <Target className="h-5 w-5" />Tỷ lệ bán TB
                 </div>
                 <div className="text-2xl font-bold text-purple-700">{result.results.avgSellThrough}%</div>
               </div>
