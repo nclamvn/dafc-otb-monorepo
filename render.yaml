@@ -9,8 +9,8 @@ services:
     runtime: node
     region: singapore
     plan: starter
-    buildCommand: npm install -g pnpm && NODE_ENV=development pnpm install --frozen-lockfile && cd apps/web && pnpm exec prisma generate --schema=../../packages/database/prisma/schema.prisma && cd ../.. && pnpm run build --filter=@dafc/web
-    startCommand: pnpm run start --filter=@dafc/web
+    buildCommand: npm install -g pnpm && NODE_ENV=development pnpm install --frozen-lockfile && cd apps/web && pnpm exec prisma generate --schema=../../packages/database/prisma/schema.prisma && cd ../.. && pnpm run build --filter=@dafc/web && cp -r apps/web/public apps/web/.next/standalone/apps/web/ && cp -r apps/web/.next/static apps/web/.next/standalone/apps/web/.next/
+    startCommand: node apps/web/.next/standalone/apps/web/server.js
     healthCheckPath: /
     envVars:
       - key: NODE_ENV
