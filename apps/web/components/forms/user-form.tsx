@@ -5,7 +5,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
 import { createUserSchema, updateUserSchema, UserFormData } from '@/lib/validations/user';
-import { UserRole, UserStatus } from '@prisma/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -56,8 +55,8 @@ export function UserForm({
       email: initialData?.email || '',
       name: initialData?.name || '',
       password: '',
-      role: initialData?.role || UserRole.BRAND_PLANNER,
-      status: initialData?.status || UserStatus.ACTIVE,
+      role: initialData?.role || 'BRAND_PLANNER',
+      status: initialData?.status || 'ACTIVE',
       assignedBrandIds: initialData?.assignedBrandIds || [],
     },
   });

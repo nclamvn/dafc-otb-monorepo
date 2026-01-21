@@ -1,34 +1,89 @@
-import {
-  UserRole,
-  UserStatus,
-  BudgetStatus,
-  Gender,
-  OTBPlanStatus,
-  OTBVersionType,
-  SKUProposalStatus,
-  SKUValidationStatus,
-  WorkflowType,
-  WorkflowStatus,
-  WorkflowStepStatus,
-  NotificationType,
-  NotificationPriority,
-} from '@prisma/client';
+// ============================================
+// ENUMS (defined locally to avoid @prisma/client dependency during build)
+// ============================================
 
-export type {
-  UserRole,
-  UserStatus,
-  BudgetStatus,
-  Gender,
-  OTBPlanStatus,
-  OTBVersionType,
-  SKUProposalStatus,
-  SKUValidationStatus,
-  WorkflowType,
-  WorkflowStatus,
-  WorkflowStepStatus,
-  NotificationType,
-  NotificationPriority,
-};
+export type UserRole =
+  | 'ADMIN'
+  | 'FINANCE_HEAD'
+  | 'FINANCE_USER'
+  | 'BRAND_MANAGER'
+  | 'BRAND_PLANNER'
+  | 'MERCHANDISE_LEAD'
+  | 'BOD_MEMBER';
+
+export type UserStatus = 'ACTIVE' | 'INACTIVE' | 'PENDING';
+
+export type BudgetStatus =
+  | 'DRAFT'
+  | 'SUBMITTED'
+  | 'UNDER_REVIEW'
+  | 'APPROVED'
+  | 'REVISED'
+  | 'REJECTED';
+
+export type Gender = 'MEN' | 'WOMEN' | 'UNISEX' | 'KIDS';
+
+export type OTBPlanStatus =
+  | 'DRAFT'
+  | 'SYSTEM_PROPOSED'
+  | 'USER_PROPOSED'
+  | 'SUBMITTED'
+  | 'UNDER_REVIEW'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'REVISED'
+  | 'FINAL';
+
+export type OTBVersionType =
+  | 'V0_SYSTEM'
+  | 'V1_USER'
+  | 'V2_ADJUSTED'
+  | 'V3_REVIEWED'
+  | 'VA_APPROVED'
+  | 'VF_FINAL'
+  | 'REVISED';
+
+export type SKUProposalStatus =
+  | 'DRAFT'
+  | 'VALIDATING'
+  | 'VALIDATED'
+  | 'ENRICHING'
+  | 'ENRICHED'
+  | 'SUBMITTED'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'REVISED';
+
+export type SKUValidationStatus = 'PENDING' | 'VALID' | 'WARNING' | 'ERROR';
+
+export type WorkflowType = 'BUDGET_APPROVAL' | 'OTB_APPROVAL' | 'SKU_APPROVAL';
+
+export type WorkflowStatus =
+  | 'PENDING'
+  | 'IN_PROGRESS'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'CANCELLED';
+
+export type WorkflowStepStatus =
+  | 'PENDING'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'SKIPPED'
+  | 'REJECTED';
+
+export type NotificationType =
+  | 'WORKFLOW_ASSIGNED'
+  | 'WORKFLOW_APPROVED'
+  | 'WORKFLOW_REJECTED'
+  | 'WORKFLOW_REMINDER'
+  | 'BUDGET_SUBMITTED'
+  | 'OTB_GENERATED'
+  | 'SKU_UPLOADED'
+  | 'COMMENT_ADDED'
+  | 'SYSTEM_ALERT';
+
+export type NotificationPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
 export interface User {
   id: string;

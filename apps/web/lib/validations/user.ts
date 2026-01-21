@@ -1,5 +1,18 @@
 import { z } from 'zod';
-import { UserRole, UserStatus } from '@prisma/client';
+import { UserRole, UserStatus } from '@/types';
+
+// Define role and status values for Zod validation
+const USER_ROLES = [
+  'ADMIN',
+  'FINANCE_HEAD',
+  'FINANCE_USER',
+  'BRAND_MANAGER',
+  'BRAND_PLANNER',
+  'MERCHANDISE_LEAD',
+  'BOD_MEMBER',
+] as const;
+
+const USER_STATUSES = ['ACTIVE', 'INACTIVE', 'PENDING'] as const;
 
 export const userSchema = z.object({
   email: z.string().email('Must be a valid email'),
@@ -9,8 +22,8 @@ export const userSchema = z.object({
     .min(8, 'Password must be at least 8 characters')
     .optional()
     .or(z.literal('')),
-  role: z.nativeEnum(UserRole).default(UserRole.BRAND_PLANNER),
-  status: z.nativeEnum(UserStatus).default(UserStatus.ACTIVE),
+  role: z.enum(USER_ROLES).default('BRAND_PLANNER'),
+  status: z.enum(USER_STATUSES).default('ACTIVE'),
   assignedBrandIds: z.array(z.string()).optional(),
 });
 

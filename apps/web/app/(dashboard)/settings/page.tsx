@@ -9,8 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { PageHeader } from '@/components/shared/page-header';
-import { ROLE_LABELS } from '@/types';
-import { UserRole } from '@prisma/client';
+import { ROLE_LABELS, UserRole } from '@/types';
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
