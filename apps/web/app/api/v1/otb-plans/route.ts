@@ -277,30 +277,31 @@ export async function POST(request: NextRequest) {
 
         return newPlan;
       });
-    } catch (txError) {
+    } catch (txError: unknown) {
       // Handle specific Prisma errors
-      if (txError instanceof Prisma.PrismaClientKnownRequestError) {
+      const err = txError as { code?: string; meta?: unknown; message?: string };
+      if (err.code) {
         console.error('Prisma error creating OTB plan:', {
-          code: txError.code,
-          meta: txError.meta,
-          message: txError.message,
+          code: err.code,
+          meta: err.meta,
+          message: err.message,
         });
 
-        if (txError.code === 'P2002') {
+        if (err.code === 'P2002') {
           return NextResponse.json(
-            { success: false, error: 'OTB plan version already exists', details: txError.meta },
+            { success: false, error: 'OTB plan version already exists', details: err.meta },
             { status: 409 }
           );
         }
-        if (txError.code === 'P2003') {
+        if (err.code === 'P2003') {
           return NextResponse.json(
-            { success: false, error: 'Foreign key constraint failed', details: txError.meta },
+            { success: false, error: 'Foreign key constraint failed', details: err.meta },
             { status: 400 }
           );
         }
-        if (txError.code === 'P2025') {
+        if (err.code === 'P2025') {
           return NextResponse.json(
-            { success: false, error: 'Related record not found', details: txError.meta },
+            { success: false, error: 'Related record not found', details: err.meta },
             { status: 404 }
           );
         }

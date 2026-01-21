@@ -2,7 +2,6 @@
 // Shared utilities for API routes - error handling, validation, responses
 
 import { NextResponse } from 'next/server';
-import { Prisma } from '@prisma/client';
 
 /**
  * Standard API response type
@@ -63,44 +62,48 @@ export function handlePrismaError(
   error: unknown,
   context?: string
 ): NextResponse<ApiResponse> | null {
-  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+  const err = error as { code?: string; meta?: { target?: string[]; field_name?: string }; message?: string; name?: string };
+
+  // Check for Prisma known request errors (have a code starting with P)
+  if (err.code && err.code.startsWith('P')) {
     console.error(`Prisma error${context ? ` (${context})` : ''}:`, {
-      code: error.code,
-      meta: error.meta,
-      message: error.message,
+      code: err.code,
+      meta: err.meta,
+      message: err.message,
     });
 
-    switch (error.code) {
+    switch (err.code) {
       case 'P2002': {
         // Unique constraint violation
-        const target = (error.meta?.target as string[])?.join(', ') || 'field';
-        return errorResponse(`Duplicate value: ${target} already exists`, 409, error.meta);
+        const target = err.meta?.target?.join(', ') || 'field';
+        return errorResponse(`Duplicate value: ${target} already exists`, 409, err.meta);
       }
       case 'P2003': {
         // Foreign key constraint failure
-        const field = (error.meta?.field_name as string) || 'reference';
-        return errorResponse(`Invalid ${field}: referenced record does not exist`, 400, error.meta);
+        const field = err.meta?.field_name || 'reference';
+        return errorResponse(`Invalid ${field}: referenced record does not exist`, 400, err.meta);
       }
       case 'P2025': {
         // Record not found
-        return errorResponse('Record not found', 404, error.meta);
+        return errorResponse('Record not found', 404, err.meta);
       }
       case 'P2014': {
         // Required relation violation
-        return errorResponse('Cannot delete: record has related data', 400, error.meta);
+        return errorResponse('Cannot delete: record has related data', 400, err.meta);
       }
       case 'P2016': {
         // Query interpretation error
-        return errorResponse('Invalid query parameters', 400, error.meta);
+        return errorResponse('Invalid query parameters', 400, err.meta);
       }
       default:
-        return errorResponse(`Database error: ${error.code}`, 500, error.meta);
+        return errorResponse(`Database error: ${err.code}`, 500, err.meta);
     }
   }
 
-  if (error instanceof Prisma.PrismaClientValidationError) {
-    console.error('Prisma validation error:', error.message);
-    return errorResponse('Invalid data format', 400, error.message);
+  // Check for Prisma validation errors
+  if (err.name === 'PrismaClientValidationError') {
+    console.error('Prisma validation error:', err.message);
+    return errorResponse('Invalid data format', 400, err.message);
   }
 
   // Not a Prisma error, return null to let caller handle it

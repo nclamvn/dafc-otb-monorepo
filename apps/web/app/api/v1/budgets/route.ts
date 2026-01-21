@@ -215,21 +215,22 @@ export async function POST(request: NextRequest) {
           createdBy: { select: { id: true, name: true, email: true } },
         },
       });
-    } catch (createError) {
-      if (createError instanceof Prisma.PrismaClientKnownRequestError) {
+    } catch (createError: unknown) {
+      const err = createError as { code?: string; meta?: unknown; message?: string };
+      if (err.code) {
         console.error('Prisma error creating budget:', {
-          code: createError.code,
-          meta: createError.meta,
-          message: createError.message,
+          code: err.code,
+          meta: err.meta,
+          message: err.message,
         });
 
-        if (createError.code === 'P2002') {
+        if (err.code === 'P2002') {
           return NextResponse.json(
             { success: false, error: 'Budget with this combination already exists' },
             { status: 409 }
           );
         }
-        if (createError.code === 'P2003') {
+        if (err.code === 'P2003') {
           return NextResponse.json(
             { success: false, error: 'Invalid reference: season, brand, or location not found' },
             { status: 400 }
