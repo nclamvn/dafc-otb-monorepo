@@ -2,7 +2,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { getERPConnectionById, runSync, testConnection, getSyncLogs } from '@/lib/erp';
-import { SyncDirection } from '@prisma/client';
+
+// Define SyncDirection locally to avoid @prisma/client dependency
+type SyncDirection = 'INBOUND' | 'OUTBOUND' | 'BIDIRECTIONAL';
 
 // GET /api/v1/integrations/erp/[id]/sync - Get sync logs
 export async function GET(
@@ -94,7 +96,7 @@ export async function POST(
       }
 
       // Use connection's sync direction if not provided
-      const syncDirection = direction || connection.syncDirection || SyncDirection.BIDIRECTIONAL;
+      const syncDirection: SyncDirection = direction || connection.syncDirection || 'BIDIRECTIONAL';
 
       const result = await runSync({
         connectionId: id,

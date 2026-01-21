@@ -9,7 +9,7 @@ services:
     runtime: node
     region: singapore
     plan: starter
-    buildCommand: npm install -g pnpm && NODE_ENV=development pnpm install --frozen-lockfile && pnpm run build --filter=@dafc/web
+    buildCommand: npm install -g pnpm && NODE_ENV=development pnpm install --frozen-lockfile && npx prisma generate --schema=packages/database/prisma/schema.prisma && pnpm run build --filter=@dafc/web
     startCommand: pnpm run start --filter=@dafc/web
     healthCheckPath: /
     envVars:
@@ -23,6 +23,10 @@ services:
         generateValue: true
       - key: OPENAI_API_KEY
         value: placeholder
+      - key: DATABASE_URL
+        fromDatabase:
+          name: dafc-otb-db
+          property: connectionString
 
   # ============================================
   # Backend - NestJS API
