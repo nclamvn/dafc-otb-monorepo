@@ -4,6 +4,22 @@ Hệ thống quản lý Open-to-Buy cho ngành thời trang cao cấp.
 
 ---
 
+## 📚 Documentation
+
+| Document | Description |
+|----------|-------------|
+| **[Setup Guide](SETUP.md)** | Complete environment setup instructions |
+| **[Git Workflow](docs/GIT_WORKFLOW.md)** | Branching strategy and PR process |
+| **[Commit Convention](docs/COMMIT_CONVENTION.md)** | How to write commit messages |
+| **[Changelog](CHANGELOG.md)** | Project history and changes |
+
+### Quick Links
+
+- [API Documentation](http://localhost:3001/api/docs) (when running locally)
+- [GitHub Issues](https://github.com/nclamvn/dafc-otb-monorepo/issues)
+
+---
+
 ## Báo cáo hoàn thành yêu cầu khách hàng
 
 ### Tổng quan các yêu cầu
