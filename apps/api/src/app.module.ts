@@ -35,6 +35,7 @@ import { ClearanceModule } from './modules/clearance/clearance.module';
 import { ReplenishmentModule } from './modules/replenishment/replenishment.module';
 import { ForecastingModule } from './modules/forecasting/forecasting.module';
 import { FormulasModule } from './modules/formulas/formulas.module';
+import { ExcelToolsModule } from './modules/excel-tools/excel-tools.module';
 
 @Module({
   imports: [
@@ -113,6 +114,9 @@ import { FormulasModule } from './modules/formulas/formulas.module';
 
     // Formula Engine (ExcelAI Core)
     FormulasModule,
+
+    // Excel Tools (NL Formula + Data Cleaner)
+    ExcelToolsModule,
   ],
   providers: [
     // Global exception filter for Prisma errors
