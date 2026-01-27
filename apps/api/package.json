@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "@dafc/database": "workspace:*",
+    "@dafc/excelai-core": "workspace:*",
     "@dafc/shared": "workspace:*",
     "@nestjs/common": "^10.4.0",
     "@nestjs/config": "^3.2.0",

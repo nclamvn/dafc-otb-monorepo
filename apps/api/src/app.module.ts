@@ -34,6 +34,7 @@ import { SKUAnalysisModule } from './modules/sku-analysis/sku-analysis.module';
 import { ClearanceModule } from './modules/clearance/clearance.module';
 import { ReplenishmentModule } from './modules/replenishment/replenishment.module';
 import { ForecastingModule } from './modules/forecasting/forecasting.module';
+import { FormulasModule } from './modules/formulas/formulas.module';
 
 @Module({
   imports: [
@@ -109,6 +110,9 @@ import { ForecastingModule } from './modules/forecasting/forecasting.module';
 
     // AI Forecasting
     ForecastingModule,
+
+    // Formula Engine (ExcelAI Core)
+    FormulasModule,
   ],
   providers: [
     // Global exception filter for Prisma errors
