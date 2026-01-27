@@ -1,4 +1,5 @@
 import * as XLSX from 'xlsx';
+import { isFormula, evaluateFormula, createSKUFormulaContext } from './formula-helper';
 
 // Types for parsed SKU data
 export interface ParsedSKU {
@@ -33,6 +34,7 @@ export interface ParseResult {
     errorRows: number;
     totalQuantity: number;
     totalValue: number;
+    formulasEvaluated: number;
   };
 }
 
@@ -94,7 +96,7 @@ export function parseExcelFile(buffer: ArrayBuffer): ParseResult {
         success: false,
         data: [],
         errors: [{ row: 0, column: '', message: 'No data found in file', severity: 'error' }],
-        summary: { totalRows: 0, parsedRows: 0, errorRows: 0, totalQuantity: 0, totalValue: 0 },
+        summary: { totalRows: 0, parsedRows: 0, errorRows: 0, totalQuantity: 0, totalValue: 0, formulasEvaluated: 0 },
       };
     }
 
@@ -103,12 +105,15 @@ export function parseExcelFile(buffer: ArrayBuffer): ParseResult {
     const columnMap = createColumnMapping(headers);
     const sizeColumns = detectSizeColumns(headers);
 
+    // Track formula evaluations
+    const formulaCount = { count: 0 };
+
     // Parse each row
     rawData.forEach((row, index) => {
       const rowNumber = index + 2; // Excel row number (1-indexed + header)
       const rowErrors: ParseError[] = [];
 
-      const parsedRow = parseRow(row, columnMap, sizeColumns, rowNumber, rowErrors);
+      const parsedRow = parseRow(row, columnMap, sizeColumns, rowNumber, rowErrors, formulaCount);
 
       if (parsedRow) {
         data.push(parsedRow);
@@ -134,6 +139,7 @@ export function parseExcelFile(buffer: ArrayBuffer): ParseResult {
         errorRows: rawData.length - data.length,
         totalQuantity,
         totalValue,
+        formulasEvaluated: formulaCount.count,
       },
     };
   } catch (error) {
@@ -148,7 +154,7 @@ export function parseExcelFile(buffer: ArrayBuffer): ParseResult {
           severity: 'error',
         },
       ],
-      summary: { totalRows: 0, parsedRows: 0, errorRows: 0, totalQuantity: 0, totalValue: 0 },
+      summary: { totalRows: 0, parsedRows: 0, errorRows: 0, totalQuantity: 0, totalValue: 0, formulasEvaluated: 0 },
     };
   }
 }
@@ -183,16 +189,31 @@ function parseRow(
   columnMap: Record<string, string>,
   sizeColumns: string[],
   rowNumber: number,
-  errors: ParseError[]
+  errors: ParseError[],
+  formulaCount: { count: number }
 ): ParsedSKU | null {
+  // Create formula context from row data
+  const formulaContext = createSKUFormulaContext(row);
+
   // Get required fields
   const skuCode = getStringValue(row, columnMap.skuCode);
   const styleName = getStringValue(row, columnMap.styleName);
   const category = getStringValue(row, columnMap.category);
   const gender = normalizeGender(getStringValue(row, columnMap.gender));
-  const retailPrice = getNumericValue(row, columnMap.retailPrice);
-  const costPrice = getNumericValue(row, columnMap.costPrice);
-  const orderQuantity = getNumericValue(row, columnMap.orderQuantity);
+
+  // Get numeric values with formula support
+  const retailPriceResult = getNumericValue(row, columnMap.retailPrice, formulaContext);
+  const costPriceResult = getNumericValue(row, columnMap.costPrice, formulaContext);
+  const orderQuantityResult = getNumericValue(row, columnMap.orderQuantity, formulaContext);
+
+  const retailPrice = retailPriceResult.value;
+  const costPrice = costPriceResult.value;
+  const orderQuantity = orderQuantityResult.value;
+
+  // Track formula evaluations
+  if (retailPriceResult.wasFormula) formulaCount.count++;
+  if (costPriceResult.wasFormula) formulaCount.count++;
+  if (orderQuantityResult.wasFormula) formulaCount.count++;
 
   // Validate required fields
   if (!skuCode) {
@@ -232,7 +253,7 @@ function parseRow(
   let sizeTotal = 0;
 
   for (const sizeCol of sizeColumns) {
-    const sizeQty = getNumericValue(row, sizeCol);
+    const sizeQty = getNumericValue(row, sizeCol, formulaContext).value;
     if (sizeQty > 0) {
       const sizeName = sizeCol.toUpperCase();
       sizeBreakdown[sizeName] = sizeQty;
@@ -277,8 +298,8 @@ function parseRow(
     orderQuantity,
     sizeBreakdown: Object.keys(sizeBreakdown).length > 0 ? sizeBreakdown : undefined,
     supplierSKU: getStringValue(row, columnMap.supplierSKU) || undefined,
-    leadTime: getNumericValue(row, columnMap.leadTime) || undefined,
-    moq: getNumericValue(row, columnMap.moq) || undefined,
+    leadTime: getNumericValue(row, columnMap.leadTime, formulaContext).value || undefined,
+    moq: getNumericValue(row, columnMap.moq, formulaContext).value || undefined,
     countryOfOrigin: getStringValue(row, columnMap.countryOfOrigin) || undefined,
   };
 }
@@ -291,16 +312,35 @@ function getStringValue(row: Record<string, unknown>, key?: string): string {
   return String(value).trim();
 }
 
-// Helper: Get numeric value from row
-function getNumericValue(row: Record<string, unknown>, key?: string): number {
-  if (!key || !(key in row)) return 0;
+// Helper: Get numeric value from row (with formula support)
+function getNumericValue(
+  row: Record<string, unknown>,
+  key?: string,
+  context?: Record<string, unknown>
+): { value: number; wasFormula: boolean } {
+  if (!key || !(key in row)) return { value: 0, wasFormula: false };
   const value = row[key];
-  if (value === null || value === undefined || value === '') return 0;
+  if (value === null || value === undefined || value === '') return { value: 0, wasFormula: false };
+
+  // Check if value is a formula
+  if (isFormula(value)) {
+    const formulaContext = context || createSKUFormulaContext(row);
+    const result = evaluateFormula(value as string, formulaContext);
+    if (result.success && typeof result.value === 'number') {
+      return { value: result.value, wasFormula: true };
+    }
+    return { value: 0, wasFormula: true };
+  }
 
   // Handle string with currency symbols or commas
   const cleaned = String(value).replace(/[$€£,]/g, '');
   const num = parseFloat(cleaned);
-  return isNaN(num) ? 0 : num;
+  return { value: isNaN(num) ? 0 : num, wasFormula: false };
+}
+
+// Legacy helper for backward compatibility
+function getNumericValueSimple(row: Record<string, unknown>, key?: string): number {
+  return getNumericValue(row, key).value;
 }
 
 // Helper: Normalize gender value

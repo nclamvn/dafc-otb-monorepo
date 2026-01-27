@@ -23,15 +23,31 @@ export function isFormula(value: unknown): boolean {
 
 /**
  * Evaluate a single formula with context
+ * Accepts Record<string, unknown> for flexibility with raw Excel data
  */
 export function evaluateFormula(
   formula: string,
-  context: Record<string, FormulaValue>
+  context: Record<string, unknown>
 ): { success: boolean; value: FormulaValue; error?: string } {
   try {
     const normalizedFormula = formula.startsWith('=') ? formula : `=${formula}`;
     const ast = parser.parse(normalizedFormula);
-    const evalContext = createSimpleContext(context);
+
+    // Convert context to FormulaValue compatible format
+    const formulaContext: Record<string, FormulaValue> = {};
+    for (const [key, val] of Object.entries(context)) {
+      if (typeof val === 'number') {
+        formulaContext[key] = val;
+      } else if (typeof val === 'string') {
+        formulaContext[key] = val;
+      } else if (typeof val === 'boolean') {
+        formulaContext[key] = val;
+      } else if (val === null) {
+        formulaContext[key] = null;
+      }
+    }
+
+    const evalContext = createSimpleContext(formulaContext);
     const value = evaluator.evaluate(ast, evalContext);
 
     if (value instanceof FormulaError) {
