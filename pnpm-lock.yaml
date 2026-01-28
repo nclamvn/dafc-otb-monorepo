@@ -20,6 +20,9 @@ importers:
       '@dafc/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@dafc/excelai-ai':
+        specifier: workspace:*
+        version: link:../../packages/excelai-ai
       '@dafc/excelai-core':
         specifier: workspace:*
         version: link:../../packages/excelai-core
