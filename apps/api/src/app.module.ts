@@ -36,6 +36,7 @@ import { ReplenishmentModule } from './modules/replenishment/replenishment.modul
 import { ForecastingModule } from './modules/forecasting/forecasting.module';
 import { FormulasModule } from './modules/formulas/formulas.module';
 import { ExcelToolsModule } from './modules/excel-tools/excel-tools.module';
+import { AICopilotModule } from './modules/ai-copilot/ai-copilot.module';
 
 @Module({
   imports: [
@@ -117,6 +118,9 @@ import { ExcelToolsModule } from './modules/excel-tools/excel-tools.module';
 
     // Excel Tools (NL Formula + Data Cleaner)
     ExcelToolsModule,
+
+    // AI Copilot (Phase 3)
+    AICopilotModule,
   ],
   providers: [
     // Global exception filter for Prisma errors

@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "@dafc/database": "workspace:*",
+    "@dafc/excelai-ai": "workspace:*",
     "@dafc/excelai-core": "workspace:*",
     "@dafc/excelai-tools": "workspace:*",
     "@dafc/shared": "workspace:*",
