@@ -37,6 +37,7 @@ interface Category {
 interface LineItem {
   id?: string;
   categoryId: string;
+  collectionId?: string;
   gender: 'MEN' | 'WOMEN' | 'UNISEX' | 'KIDS';
   plannedUnits: number;
   plannedAmount: number;
@@ -45,17 +46,34 @@ interface LineItem {
   marginPercent: number;
   sellThruTarget: number;
   weeksOfSupply?: number;
+  // New metrics from Product Brief
+  buyPercent?: number;        // % Buy
+  salesPercent?: number;      // % Sales
+  salesThruValue?: number;    // $ Sales thru
+  monthOfCover?: number;      // MOC (Month of Cover)
   comments?: string;
+}
+
+interface Collection {
+  id: string;
+  name: string;
+  code: string;
 }
 
 interface OTBHierarchyTableProps {
   lineItems: LineItem[];
   categories: Category[];
+  collections?: Collection[];
   totalBudget: number;
   isEditable: boolean;
   onLineItemsChange?: (lineItems: LineItem[]) => void;
   onGenerateAI?: () => void;
   isGeneratingAI?: boolean;
+  // Filters
+  selectedCollection?: string;
+  onCollectionChange?: (collectionId: string) => void;
+  selectedSizing?: string;
+  onSizingChange?: (sizing: string) => void;
 }
 
 type GenderKey = 'MEN' | 'WOMEN' | 'UNISEX' | 'KIDS';
@@ -63,11 +81,16 @@ type GenderKey = 'MEN' | 'WOMEN' | 'UNISEX' | 'KIDS';
 export function OTBHierarchyTable({
   lineItems,
   categories,
+  collections = [],
   totalBudget,
   isEditable,
   onLineItemsChange,
   onGenerateAI,
   isGeneratingAI,
+  selectedCollection,
+  onCollectionChange,
+  selectedSizing,
+  onSizingChange,
 }: OTBHierarchyTableProps) {
   const [expandedGenders, setExpandedGenders] = useState<Set<string>>(
     new Set(['MEN', 'WOMEN', 'UNISEX', 'KIDS'])
@@ -106,8 +129,21 @@ export function OTBHierarchyTable({
           lineItems.length > 0
             ? acc.sellThru + item.sellThruTarget / lineItems.length
             : 0,
+        buyPct:
+          lineItems.length > 0
+            ? acc.buyPct + (item.buyPercent || 0) / lineItems.length
+            : 0,
+        salesPct:
+          lineItems.length > 0
+            ? acc.salesPct + (item.salesPercent || 0) / lineItems.length
+            : 0,
+        salesThru: acc.salesThru + (item.salesThruValue || 0),
+        moc:
+          lineItems.length > 0
+            ? acc.moc + (item.monthOfCover || 0) / lineItems.length
+            : 0,
       }),
-      { units: 0, amount: 0, margin: 0, sellThru: 0 }
+      { units: 0, amount: 0, margin: 0, sellThru: 0, buyPct: 0, salesPct: 0, salesThru: 0, moc: 0 }
     );
 
     return {
@@ -220,7 +256,7 @@ export function OTBHierarchyTable({
     <div className="space-y-4">
       {/* Summary Bar */}
       <div className="flex items-center justify-between bg-muted/50 p-4 rounded-lg">
-        <div className="flex gap-6">
+        <div className="flex gap-6 flex-wrap">
           <div>
             <p className="text-sm text-muted-foreground">Total Units</p>
             <p className="text-lg font-bold">{totals.units.toLocaleString()}</p>
@@ -230,14 +266,20 @@ export function OTBHierarchyTable({
             <p className="text-lg font-bold">${totals.amount.toLocaleString()}</p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">Budget Utilization</p>
-            <p
-              className={`text-lg font-bold ${
-                totals.budgetUtilization > 100 ? 'text-red-600' : 'text-green-600'
-              }`}
-            >
-              {totals.budgetUtilization.toFixed(1)}%
-            </p>
+            <p className="text-sm text-muted-foreground">% Buy</p>
+            <p className="text-lg font-bold text-blue-600">{totals.buyPct.toFixed(1)}%</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">% Sales</p>
+            <p className="text-lg font-bold text-green-600">{totals.salesPct.toFixed(1)}%</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">$ Sales Thru</p>
+            <p className="text-lg font-bold">${totals.salesThru.toLocaleString()}</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">MOC</p>
+            <p className="text-lg font-bold">{totals.moc.toFixed(1)}</p>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">Avg Margin</p>
@@ -255,6 +297,53 @@ export function OTBHierarchyTable({
             {isGeneratingAI ? 'Generating...' : 'AI Proposal'}
           </Button>
         )}
+      </div>
+
+      {/* Dimension Filters */}
+      <div className="flex items-center gap-4 flex-wrap">
+        {/* Collection Filter */}
+        {collections.length > 0 && (
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Collection:</span>
+            <Select
+              value={selectedCollection || 'all'}
+              onValueChange={(v) => onCollectionChange?.(v === 'all' ? '' : v)}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="All Collections" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Collections</SelectItem>
+                {collections.map((col) => (
+                  <SelectItem key={col.id} value={col.id}>
+                    {col.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        {/* Sizing Filter */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Sizing:</span>
+          <Select
+            value={selectedSizing || 'all'}
+            onValueChange={(v) => onSizingChange?.(v === 'all' ? '' : v)}
+          >
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="All Sizes" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Sizes</SelectItem>
+              <SelectItem value="ALPHA">Alpha (XS-XXL)</SelectItem>
+              <SelectItem value="NUMERIC">Numeric (0-16)</SelectItem>
+              <SelectItem value="WAIST">Waist (28-42)</SelectItem>
+              <SelectItem value="SHOE">Shoe (35-48)</SelectItem>
+              <SelectItem value="ONE_SIZE">One Size</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Add Item Controls */}
@@ -290,8 +379,10 @@ export function OTBHierarchyTable({
               <TableHead className="w-[200px]">Category</TableHead>
               <TableHead className="text-right">Units</TableHead>
               <TableHead className="text-right">Amount</TableHead>
-              <TableHead className="text-right">ARP</TableHead>
-              <TableHead className="text-right">ACP</TableHead>
+              <TableHead className="text-right">% Buy</TableHead>
+              <TableHead className="text-right">% Sales</TableHead>
+              <TableHead className="text-right">$ Sales Thru</TableHead>
+              <TableHead className="text-right">MOC</TableHead>
               <TableHead className="text-right">Margin %</TableHead>
               <TableHead className="text-right">ST Target</TableHead>
               <TableHead className="text-right">WOS</TableHead>
@@ -337,6 +428,8 @@ export function OTBHierarchyTable({
                     <TableCell className="text-right font-medium">
                       ${genderTotal.amount.toLocaleString()}
                     </TableCell>
+                    <TableCell></TableCell>
+                    <TableCell></TableCell>
                     <TableCell></TableCell>
                     <TableCell></TableCell>
                     <TableCell className="text-right">
@@ -403,32 +496,63 @@ export function OTBHierarchyTable({
                               `$${item.plannedAmount.toLocaleString()}`
                             )}
                           </TableCell>
+                          {/* % Buy */}
+                          <TableCell className="text-right">
+                            {isEditable ? (
+                              <PercentInput
+                                value={item.buyPercent || 0}
+                                onChange={(val) =>
+                                  handleUpdateItem(globalIndex, 'buyPercent', val || 0)
+                                }
+                                className="w-20 text-right"
+                              />
+                            ) : (
+                              `${(item.buyPercent || 0).toFixed(1)}%`
+                            )}
+                          </TableCell>
+                          {/* % Sales */}
+                          <TableCell className="text-right">
+                            {isEditable ? (
+                              <PercentInput
+                                value={item.salesPercent || 0}
+                                onChange={(val) =>
+                                  handleUpdateItem(globalIndex, 'salesPercent', val || 0)
+                                }
+                                className="w-20 text-right"
+                              />
+                            ) : (
+                              `${(item.salesPercent || 0).toFixed(1)}%`
+                            )}
+                          </TableCell>
+                          {/* $ Sales Thru */}
                           <TableCell className="text-right">
                             {isEditable ? (
                               <CurrencyInput
-                                value={item.averageRetailPrice}
+                                value={item.salesThruValue || 0}
                                 onChange={(val) =>
-                                  handleUpdateItem(globalIndex, 'averageRetailPrice', val || 0)
+                                  handleUpdateItem(globalIndex, 'salesThruValue', val || 0)
                                 }
                                 className="w-24 text-right"
                               />
                             ) : (
-                              `$${item.averageRetailPrice.toFixed(2)}`
+                              `$${(item.salesThruValue || 0).toLocaleString()}`
                             )}
                           </TableCell>
+                          {/* MOC (Month of Cover) */}
                           <TableCell className="text-right">
                             {isEditable ? (
-                              <CurrencyInput
-                                value={item.averageCostPrice}
+                              <IntegerInput
+                                value={item.monthOfCover || 0}
                                 onChange={(val) =>
-                                  handleUpdateItem(globalIndex, 'averageCostPrice', val || 0)
+                                  handleUpdateItem(globalIndex, 'monthOfCover', val || 0)
                                 }
-                                className="w-24 text-right"
+                                className="w-16 text-right"
                               />
                             ) : (
-                              `$${item.averageCostPrice.toFixed(2)}`
+                              (item.monthOfCover || 0).toFixed(1)
                             )}
                           </TableCell>
+                          {/* Margin % */}
                           <TableCell className="text-right">
                             {isEditable ? (
                               <PercentInput
@@ -492,11 +616,13 @@ export function OTBHierarchyTable({
               <TableCell>TOTAL</TableCell>
               <TableCell className="text-right">{totals.units.toLocaleString()}</TableCell>
               <TableCell className="text-right">${totals.amount.toLocaleString()}</TableCell>
-              <TableCell></TableCell>
-              <TableCell></TableCell>
+              <TableCell></TableCell>{/* % Buy */}
+              <TableCell></TableCell>{/* % Sales */}
+              <TableCell></TableCell>{/* $ Sales Thru */}
+              <TableCell></TableCell>{/* MOC */}
               <TableCell className="text-right">{totals.margin.toFixed(1)}%</TableCell>
               <TableCell className="text-right">{totals.sellThru.toFixed(1)}%</TableCell>
-              <TableCell></TableCell>
+              <TableCell></TableCell>{/* WOS */}
               {isEditable && <TableCell></TableCell>}
             </TableRow>
           </TableBody>
