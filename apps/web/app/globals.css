@@ -20,62 +20,63 @@
     /* DAFC Brand Colors - Core Identity */
     --dafc-gold: 30 43% 72%;        /* #D7B797 - Champagne Gold */
     --dafc-gold-light: 30 45% 82%;  /* #E8D4C0 - Light Gold */
-    --dafc-gold-dark: 30 40% 55%;   /* #B89970 - Dark Gold */
+    --dafc-gold-dark: 30 45% 45%;   /* #A67C52 - Dark Gold (darker for contrast) */
+    --dafc-gold-darker: 30 50% 35%; /* #8A6340 - Extra dark gold for light mode */
     --dafc-green: 152 73% 27%;      /* #127749 - Forest Green */
     --dafc-green-light: 152 60% 40%;/* #2A9E6A - Light Green */
     --dafc-green-dark: 152 80% 18%; /* #095431 - Dark Green */
   }
 
   /* ═══════════════════════════════════════════════════════════════════════════
-     LIGHT THEME - DAFC Light Mode
+     LIGHT THEME - DAFC Light Mode (High Contrast)
      ═══════════════════════════════════════════════════════════════════════════ */
   .light {
     /* Canvas & Surfaces */
-    --background: 40 20% 98%;       /* #FDFCFB - Warm white */
-    --foreground: 0 0% 10%;         /* #1A1A1A - Near black */
-    --card: 40 15% 96%;             /* #F7F6F4 - Warm surface */
-    --card-foreground: 0 0% 10%;
-    --popover: 40 10% 94%;          /* #F2F0ED - Elevated surface */
-    --popover-foreground: 0 0% 10%;
+    --background: 40 15% 97%;       /* #FAF9F7 - Clean white */
+    --foreground: 0 0% 8%;          /* #141414 - Deep black for text */
+    --card: 40 12% 95%;             /* #F4F3F1 - Warm surface */
+    --card-foreground: 0 0% 8%;
+    --popover: 0 0% 100%;           /* #FFFFFF - Pure white popover */
+    --popover-foreground: 0 0% 8%;
 
-    /* DAFC Primary (Champagne Gold for light mode) */
-    --primary: var(--dafc-gold-dark);
+    /* DAFC Primary (Darker Gold for light mode contrast) */
+    --primary: var(--dafc-gold-darker);
     --primary-foreground: 0 0% 100%;
 
     /* DAFC Secondary (Forest Green) */
-    --secondary: var(--dafc-green);
+    --secondary: var(--dafc-green-dark);
     --secondary-foreground: 0 0% 100%;
 
-    /* Muted & Neutral */
-    --muted: 30 10% 92%;            /* #EDEBE8 */
-    --muted-foreground: 0 0% 40%;   /* #666666 */
+    /* Muted & Neutral - Higher contrast */
+    --muted: 30 8% 90%;             /* #E8E6E3 */
+    --muted-foreground: 0 0% 30%;   /* #4D4D4D - Darker for readability */
 
-    /* Accent (Gold) */
-    --accent: var(--dafc-gold);
-    --accent-foreground: 0 0% 10%;
+    /* Accent (Darker Gold for light mode) */
+    --accent: var(--dafc-gold-dark);
+    --accent-foreground: 0 0% 100%;
 
     /* Destructive */
-    --destructive: 0 72% 51%;       /* #DC2626 */
+    --destructive: 0 80% 45%;       /* #CC1F1F - Darker red */
     --destructive-foreground: 0 0% 100%;
 
-    /* Borders & Inputs */
-    --border: 30 10% 85%;           /* #DBD8D3 */
-    --input: 30 10% 85%;
-    --ring: var(--dafc-gold);
+    /* Borders & Inputs - More visible */
+    --border: 30 12% 78%;           /* #CCC7C0 - More visible border */
+    --input: 30 12% 78%;
+    --ring: var(--dafc-gold-dark);
 
-    /* Status Colors - Light Mode */
-    --status-success: var(--dafc-green);
-    --status-warning: 38 92% 50%;   /* #F59E0B */
-    --status-critical: 0 72% 51%;   /* #DC2626 */
-    --status-info: 210 79% 46%;     /* #2563EB */
+    /* Status Colors - Light Mode (Darker for contrast) */
+    --status-success: var(--dafc-green-dark);
+    --status-warning: 38 95% 42%;   /* #D18800 - Darker amber */
+    --status-critical: 0 80% 45%;   /* #CC1F1F - Darker red */
+    --status-info: 210 85% 40%;     /* #1A5DC9 - Darker blue */
 
-    /* Chart Colors - DAFC Palette */
-    --chart-1: var(--dafc-gold);
+    /* Chart Colors - DAFC Palette (Darker for light mode) */
+    --chart-1: var(--dafc-gold-dark);
     --chart-2: var(--dafc-green);
-    --chart-3: 38 92% 50%;          /* Amber */
-    --chart-4: 270 60% 55%;         /* Purple */
-    --chart-5: 0 72% 51%;           /* Red */
-    --chart-6: 0 0% 50%;            /* Gray */
+    --chart-3: 38 95% 42%;          /* Darker Amber */
+    --chart-4: 270 65% 45%;         /* Darker Purple */
+    --chart-5: 0 75% 45%;           /* Darker Red */
+    --chart-6: 0 0% 40%;            /* Darker Gray */
 
     color-scheme: light;
   }
@@ -458,38 +459,70 @@
            rounded border;
   }
 
-  .ind-badge-critical {
+  /* Light mode badge colors - high contrast */
+  .light .ind-badge-critical {
+    background: rgba(204, 31, 31, 0.12);
+    color: #B91C1C;
+    border-color: rgba(204, 31, 31, 0.35);
+  }
+
+  .light .ind-badge-warning {
+    background: rgba(180, 117, 0, 0.12);
+    color: #92610A;
+    border-color: rgba(180, 117, 0, 0.35);
+  }
+
+  .light .ind-badge-success {
+    background: rgba(9, 84, 49, 0.12);
+    color: #065F32;
+    border-color: rgba(9, 84, 49, 0.35);
+  }
+
+  .light .ind-badge-info {
+    background: rgba(26, 93, 201, 0.12);
+    color: #1A5DC9;
+    border-color: rgba(26, 93, 201, 0.35);
+  }
+
+  .light .ind-badge-ai {
+    background: rgba(109, 40, 217, 0.12);
+    color: #6D28D9;
+    border-color: rgba(109, 40, 217, 0.35);
+  }
+
+  /* Dark mode badge colors */
+  .dark .ind-badge-critical {
     background: rgba(248, 81, 73, 0.15);
     color: #FF7B72;
     border-color: rgba(248, 81, 73, 0.4);
   }
 
-  .ind-badge-warning {
+  .dark .ind-badge-warning {
     background: rgba(210, 153, 34, 0.15);
     color: #E3B341;
     border-color: rgba(210, 153, 34, 0.4);
   }
 
-  .ind-badge-success {
+  .dark .ind-badge-success {
     background: rgba(63, 185, 80, 0.15);
     color: #7EE787;
     border-color: rgba(63, 185, 80, 0.4);
   }
 
-  .ind-badge-info {
+  .dark .ind-badge-info {
     background: rgba(88, 166, 255, 0.15);
     color: #79C0FF;
     border-color: rgba(88, 166, 255, 0.4);
   }
 
-  .ind-badge-neutral {
-    @apply bg-surface-secondary text-content-secondary border-border;
-  }
-
-  .ind-badge-ai {
+  .dark .ind-badge-ai {
     background: rgba(163, 113, 247, 0.15);
     color: #D2A8FF;
     border-color: rgba(163, 113, 247, 0.4);
+  }
+
+  .ind-badge-neutral {
+    @apply bg-surface-secondary text-content-secondary border-border;
   }
 
   /* ─────────────────────────────────────────────────────────────────────────
@@ -692,7 +725,12 @@
     @apply bg-card border border-border rounded-lg overflow-hidden;
   }
 
-  .dafc-card-header {
+  .light .dafc-card-header {
+    @apply px-3 py-2 border-b border-border;
+    background: linear-gradient(135deg, rgba(138, 99, 64, 0.08), transparent);
+  }
+
+  .dark .dafc-card-header {
     @apply px-3 py-2 border-b border-border;
     background: linear-gradient(135deg, rgba(215, 183, 151, 0.05), transparent);
   }
@@ -720,13 +758,27 @@
     border-radius: var(--radius-pill);
   }
 
-  .dafc-badge-gold {
+  /* Light mode DAFC badges - high contrast */
+  .light .dafc-badge-gold {
+    background: rgba(138, 99, 64, 0.15);
+    color: #6B4D32;
+    border: 1px solid rgba(138, 99, 64, 0.4);
+  }
+
+  .light .dafc-badge-green {
+    background: rgba(9, 84, 49, 0.15);
+    color: #065F32;
+    border: 1px solid rgba(9, 84, 49, 0.4);
+  }
+
+  /* Dark mode DAFC badges */
+  .dark .dafc-badge-gold {
     background: rgba(215, 183, 151, 0.15);
     color: hsl(var(--dafc-gold));
     border: 1px solid rgba(215, 183, 151, 0.3);
   }
 
-  .dafc-badge-green {
+  .dark .dafc-badge-green {
     background: rgba(18, 119, 73, 0.15);
     color: hsl(var(--dafc-green-light));
     border: 1px solid rgba(18, 119, 73, 0.3);
