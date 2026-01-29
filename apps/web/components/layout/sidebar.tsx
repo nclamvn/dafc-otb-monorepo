@@ -111,6 +111,8 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
   const t = useTranslations('navigation');
   const tMasterData = useTranslations('masterData');
   const tAnalytics = useTranslations('analytics');
+  const tSettings = useTranslations('settings');
+  const tAuth = useTranslations('auth');
   const tUi = useTranslations('ui');
 
   const getInitials = (name: string) => {
@@ -579,25 +581,25 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                 <DropdownMenuItem asChild>
                   <Link href="/settings/profile" className="cursor-pointer">
                     <User className="mr-2 h-4 w-4" />
-                    <span>Hồ sơ cá nhân</span>
+                    <span>{tSettings('profile')}</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/settings" className="cursor-pointer">
                     <Settings className="mr-2 h-4 w-4" />
-                    <span>Cài đặt</span>
+                    <span>{tSettings('title')}</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/settings/billing" className="cursor-pointer">
                     <CreditCard className="mr-2 h-4 w-4" />
-                    <span>Thanh toán</span>
+                    <span>{tSettings('billing')}</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/help" className="cursor-pointer">
                     <HelpCircle className="mr-2 h-4 w-4" />
-                    <span>Trợ giúp</span>
+                    <span>{t('help')}</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -606,7 +608,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                   className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>Đăng xuất</span>
+                  <span>{tAuth('logout')}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

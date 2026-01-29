@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { TrendingDown, AlertTriangle, Plus, Play, Loader2 } from 'lucide-react';
@@ -159,6 +160,7 @@ function generateDemoOptimizationResult(planId: string): OptimizationResult {
 }
 
 export function ClearanceDashboard({ brandId, seasonId }: Props) {
+  const t = useTranslations('clearance');
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [optimizationResult, setOptimizationResult] = useState<OptimizationResult | null>(null);
   const [plans, setPlans] = useState<MarkdownPlan[]>([]);
@@ -199,23 +201,23 @@ export function ClearanceDashboard({ brandId, seasonId }: Props) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Tối ưu Xả hàng</h1>
-          <p className="text-muted-foreground">Chiến lược markdown AI</p>
+          <h1 className="text-2xl font-bold">{t('title')}</h1>
+          <p className="text-muted-foreground">{t('description')}</p>
         </div>
-        <Button><Plus className="h-4 w-4 mr-2" />Tạo mới</Button>
+        <Button><Plus className="h-4 w-4 mr-2" />{t('createNew')}</Button>
       </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">Tổng kế hoạch</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground">{t('totalPlans')}</CardTitle>
           </CardHeader>
           <CardContent><div className="text-2xl font-bold">{summary.totalPlans}</div></CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">Đang hoạt động</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground">{t('active')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
@@ -226,7 +228,7 @@ export function ClearanceDashboard({ brandId, seasonId }: Props) {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">Bản nháp</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground">{t('draft')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
@@ -237,7 +239,7 @@ export function ClearanceDashboard({ brandId, seasonId }: Props) {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">Cần xử lý ngay</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground">{t('urgentAction')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
@@ -251,17 +253,17 @@ export function ClearanceDashboard({ brandId, seasonId }: Props) {
       {/* Plans List */}
       <Card>
         <CardHeader>
-          <CardTitle>Kế hoạch Markdown</CardTitle>
-          <CardDescription>Quản lý chiến lược xả hàng</CardDescription>
+          <CardTitle>{t('markdownPlans')}</CardTitle>
+          <CardDescription>{t('managePlans')}</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="flex items-center justify-center py-8 text-muted-foreground">
               <Loader2 className="h-6 w-6 animate-spin mr-2" />
-              Đang tải...
+              {t('loading')}
             </div>
           ) : plans.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">Không có kế hoạch nào</div>
+            <div className="text-center py-8 text-muted-foreground">{t('noPlans')}</div>
           ) : (
             <div className="grid grid-cols-2 gap-4">
               {plans.map((plan) => (

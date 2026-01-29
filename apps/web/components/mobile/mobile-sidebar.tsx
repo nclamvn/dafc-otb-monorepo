@@ -62,7 +62,8 @@ interface MobileSidebarProps {
 
 export function MobileSidebar({ open, onClose }: MobileSidebarProps) {
   const t = useTranslations('navigation');
-  const tCommon = useTranslations('settings');
+  const tSettings = useTranslations('settings');
+  const tAuth = useTranslations('auth');
   const tMasterData = useTranslations('masterData');
   const tAnalytics = useTranslations('analytics');
   const pathname = usePathname();
@@ -189,25 +190,25 @@ export function MobileSidebar({ open, onClose }: MobileSidebarProps) {
                 <DropdownMenuItem asChild>
                   <Link href="/settings/profile" onClick={onClose} className="cursor-pointer">
                     <User className="mr-2 h-4 w-4" />
-                    <span>Hồ sơ cá nhân</span>
+                    <span>{tSettings('profile')}</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/settings" onClick={onClose} className="cursor-pointer">
                     <Settings className="mr-2 h-4 w-4" />
-                    <span>Cài đặt</span>
+                    <span>{tSettings('title')}</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/settings/billing" onClick={onClose} className="cursor-pointer">
                     <CreditCard className="mr-2 h-4 w-4" />
-                    <span>Thanh toán</span>
+                    <span>{tSettings('billing')}</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/help" onClick={onClose} className="cursor-pointer">
                     <HelpCircle className="mr-2 h-4 w-4" />
-                    <span>Trợ giúp</span>
+                    <span>{t('help')}</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -216,7 +217,7 @@ export function MobileSidebar({ open, onClose }: MobileSidebarProps) {
                   className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>Đăng xuất</span>
+                  <span>{tAuth('logout')}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -310,7 +311,7 @@ export function MobileSidebar({ open, onClose }: MobileSidebarProps) {
         <div className="border-t p-4">
           {/* Language switcher */}
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">{tCommon('language')}</span>
+            <span className="text-sm text-muted-foreground">{tSettings('language')}</span>
             <LanguageSwitcher variant="compact" />
           </div>
         </div>

@@ -22,6 +22,7 @@ interface HeaderProps {
 export function Header({ onMenuClick }: HeaderProps) {
   const { theme, setTheme } = useTheme();
   const t = useTranslations('navigation');
+  const tNotif = useTranslations('notifications');
 
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
@@ -68,31 +69,31 @@ export function Header({ onMenuClick }: HeaderProps) {
               <DropdownMenuItem className="flex flex-col items-start gap-1 p-3 cursor-pointer">
                 <div className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-blue-500" />
-                  <span className="font-medium text-sm">Ngân sách mới được phê duyệt</span>
+                  <span className="font-medium text-sm">{tNotif('sample.budgetApproved')}</span>
                 </div>
-                <p className="text-xs text-muted-foreground pl-4">Nike SS25 budget đã được duyệt bởi Finance Head</p>
-                <span className="text-[10px] text-muted-foreground pl-4">30 phút trước</span>
+                <p className="text-xs text-muted-foreground pl-4">{tNotif('sample.budgetApprovedDesc')}</p>
+                <span className="text-[10px] text-muted-foreground pl-4">{tNotif('sample.timeAgo.minutes', { count: 30 })}</span>
               </DropdownMenuItem>
               <DropdownMenuItem className="flex flex-col items-start gap-1 p-3 cursor-pointer">
                 <div className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-orange-500" />
-                  <span className="font-medium text-sm">Cảnh báo tồn kho thấp</span>
+                  <span className="font-medium text-sm">{tNotif('sample.lowStock')}</span>
                 </div>
-                <p className="text-xs text-muted-foreground pl-4">Nike Air Max 90 size 42 dưới ngưỡng tồn kho</p>
-                <span className="text-[10px] text-muted-foreground pl-4">1 giờ trước</span>
+                <p className="text-xs text-muted-foreground pl-4">{tNotif('sample.lowStockDesc')}</p>
+                <span className="text-[10px] text-muted-foreground pl-4">{tNotif('sample.timeAgo.hours', { count: 1 })}</span>
               </DropdownMenuItem>
               <DropdownMenuItem className="flex flex-col items-start gap-1 p-3 cursor-pointer">
                 <div className="flex items-center gap-2">
                   <span className="h-2 w-2 rounded-full bg-green-500" />
-                  <span className="font-medium text-sm">OTB Plan hoàn thành</span>
+                  <span className="font-medium text-sm">{tNotif('sample.otbComplete')}</span>
                 </div>
-                <p className="text-xs text-muted-foreground pl-4">Adidas FW25 OTB plan đã được tạo thành công</p>
-                <span className="text-[10px] text-muted-foreground pl-4">2 giờ trước</span>
+                <p className="text-xs text-muted-foreground pl-4">{tNotif('sample.otbCompleteDesc')}</p>
+                <span className="text-[10px] text-muted-foreground pl-4">{tNotif('sample.timeAgo.hoursPlural', { count: 2 })}</span>
               </DropdownMenuItem>
             </div>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="text-center text-sm text-primary cursor-pointer justify-center">
-              Xem tất cả thông báo
+              {tNotif('viewAll')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

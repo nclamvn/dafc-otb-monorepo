@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -41,6 +42,7 @@ interface Props {
 }
 
 export function SimulationTool({ planId, skus }: Props) {
+  const t = useTranslations('clearance.simulation');
   const [markdownPct, setMarkdownPct] = useState(20);
   const [result, setResult] = useState<SimulationResult | null>(null);
   const [isRunning, setIsRunning] = useState(false);
@@ -60,23 +62,23 @@ export function SimulationTool({ planId, skus }: Props) {
     <div className="grid grid-cols-2 gap-6">
       <Card>
         <CardHeader>
-          <CardTitle>Tham số Mô phỏng</CardTitle>
-          <CardDescription>Thử nghiệm các kịch bản what-if</CardDescription>
+          <CardTitle>{t('title')}</CardTitle>
+          <CardDescription>{t('description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <label className="text-sm font-medium">Mức giảm giá %</label>
+              <label className="text-sm font-medium">{t('discountLevel')}</label>
               <Badge variant="outline" className="text-lg font-bold">{markdownPct}%</Badge>
             </div>
             <Slider value={[markdownPct]} onValueChange={([v]) => setMarkdownPct(v)} min={0} max={70} step={5} />
           </div>
-          <div className="text-sm text-muted-foreground">Thử nghiệm {skuIds.length} SKUs</div>
+          <div className="text-sm text-muted-foreground">{t('testingSKUs', { count: skuIds.length })}</div>
           <Button className="w-full" onClick={handleRunSimulation} disabled={isRunning}>
             {isRunning ? (
-              <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Đang chạy...</>
+              <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t('running')}</>
             ) : (
-              <><Play className="h-4 w-4 mr-2" />Chạy mô phỏng</>
+              <><Play className="h-4 w-4 mr-2" />{t('runSimulation')}</>
             )}
           </Button>
         </CardContent>
@@ -84,29 +86,29 @@ export function SimulationTool({ planId, skus }: Props) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Kết quả</CardTitle>
-          <CardDescription>Dự báo kết quả</CardDescription>
+          <CardTitle>{t('results')}</CardTitle>
+          <CardDescription>{t('predictedOutcome')}</CardDescription>
         </CardHeader>
         <CardContent>
           {!result ? (
-            <div className="text-center py-12 text-muted-foreground">Chạy mô phỏng để xem kết quả</div>
+            <div className="text-center py-12 text-muted-foreground">{t('runToSee')}</div>
           ) : (
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-green-50 rounded-lg p-4">
                 <div className="flex items-center gap-2 text-green-700 mb-2">
-                  <DollarSign className="h-5 w-5" />Doanh thu
+                  <DollarSign className="h-5 w-5" />{t('revenue')}
                 </div>
                 <div className="text-2xl font-bold text-green-700">{formatCurrency(result.results.totalRevenue)}</div>
               </div>
               <div className="bg-blue-50 rounded-lg p-4">
                 <div className="flex items-center gap-2 text-blue-700 mb-2">
-                  <Package className="h-5 w-5" />Số lượng
+                  <Package className="h-5 w-5" />{t('quantity')}
                 </div>
                 <div className="text-2xl font-bold text-blue-700">{result.results.totalUnits.toLocaleString()}</div>
               </div>
               <div className="bg-purple-50 rounded-lg p-4 col-span-2">
                 <div className="flex items-center gap-2 text-purple-700 mb-2">
-                  <Target className="h-5 w-5" />Tỷ lệ bán TB
+                  <Target className="h-5 w-5" />{t('avgSellThru')}
                 </div>
                 <div className="text-2xl font-bold text-purple-700">{result.results.avgSellThrough}%</div>
               </div>

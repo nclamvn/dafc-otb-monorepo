@@ -6,6 +6,7 @@
  */
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -48,12 +49,14 @@ interface NLFormulaInputProps {
 
 export function NLFormulaInput({
   onFormulaGenerated,
-  placeholder = 'Nhập công thức bằng tiếng Việt... (vd: tính margin)',
+  placeholder: customPlaceholder,
   className = '',
   context,
   showSuggestions = true,
   autoConvert = false,
 }: NLFormulaInputProps) {
+  const t = useTranslations('excelTools.nlFormula');
+  const placeholder = customPlaceholder || t('placeholder');
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<FormulaResult | null>(null);
@@ -220,7 +223,7 @@ export function NLFormulaInput({
             </PopoverTrigger>
             <PopoverContent className="w-[400px] p-0" align="start">
               <div className="p-2">
-                <p className="text-sm text-muted-foreground mb-2">Gợi ý công thức:</p>
+                <p className="text-sm text-muted-foreground mb-2">{t('suggestions')}</p>
                 <div className="space-y-1">
                   {suggestions.map((suggestion, index) => (
                     <button
@@ -252,7 +255,7 @@ export function NLFormulaInput({
             ) : (
               <Sparkles className="h-4 w-4" />
             )}
-            <span className="ml-2 hidden sm:inline">Chuyển đổi</span>
+            <span className="ml-2 hidden sm:inline">{t('convert')}</span>
           </Button>
         </div>
 
@@ -262,12 +265,12 @@ export function NLFormulaInput({
             <div className="flex items-start justify-between">
               <div className="space-y-1 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">Công thức:</span>
+                  <span className="text-sm font-medium">{t('formula')}:</span>
                   <Badge
                     variant="outline"
                     className={`${getConfidenceColor(result.intent.confidence)} text-white border-0`}
                   >
-                    {Math.round(result.intent.confidence * 100)}% tin cậy
+                    {Math.round(result.intent.confidence * 100)}% {t('confidence')}
                   </Badge>
                 </div>
                 <div className="flex items-center gap-2">
@@ -316,9 +319,9 @@ export function NLFormulaInput({
 
         {/* Quick Examples */}
         <div className="pt-2 border-t">
-          <p className="text-xs text-muted-foreground mb-2">Ví dụ:</p>
+          <p className="text-xs text-muted-foreground mb-2">{t('examples')}</p>
           <div className="flex flex-wrap gap-1">
-            {['tính margin', 'tổng giá trị', 'lợi nhuận', 'trung bình số lượng'].map(
+            {(t.raw('exampleFormulas') as string[]).map(
               (example) => (
                 <button
                   key={example}

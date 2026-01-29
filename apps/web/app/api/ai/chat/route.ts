@@ -1,6 +1,6 @@
 import { streamText } from 'ai';
 import { openai, DEFAULT_MODEL } from '@/lib/ai/config';
-import { SYSTEM_PROMPT, getContextPrompt, getDataPrompt, ChatContext } from '@/lib/ai/prompts';
+import { getSystemPrompt, getContextPrompt, getDataPrompt, ChatContext } from '@/lib/ai/prompts';
 import {
   parseQuery,
   getBudgetSummary,
@@ -10,12 +10,13 @@ import {
   getSeasons,
 } from '@/lib/ai/actions';
 import { auth } from '@/lib/auth';
+import { getLocale, getErrorMessage, type Locale } from '@/lib/i18n';
 
 export const maxDuration = 30;
 
 interface ChatRequest {
   messages: Array<{ role: 'user' | 'assistant'; content: string }>;
-  context?: ChatContext;
+  context?: ChatContext & { locale?: Locale };
 }
 
 // GET handler for loading conversations (returns empty array for now)
@@ -37,23 +38,29 @@ export async function DELETE() {
 }
 
 export async function POST(req: Request) {
+  // Get locale from cookie/header
+  const locale = await getLocale();
+
   try {
     // Check authentication
     const session = await auth();
     if (!session?.user) {
-      return new Response('Unauthorized', { status: 401 });
+      return new Response(getErrorMessage('UNAUTHORIZED', locale), { status: 401 });
     }
 
     const { messages, context = {} }: ChatRequest = await req.json();
 
+    // Use locale from context if provided, otherwise use detected locale
+    const requestLocale = context.locale || locale;
+
     if (!messages || messages.length === 0) {
-      return new Response('No messages provided', { status: 400 });
+      return new Response(getErrorMessage('NO_MESSAGES', requestLocale), { status: 400 });
     }
 
     // Get the latest user message
     const lastMessage = messages[messages.length - 1];
     if (lastMessage.role !== 'user') {
-      return new Response('Last message must be from user', { status: 400 });
+      return new Response(getErrorMessage('INVALID_MESSAGE_FORMAT', requestLocale), { status: 400 });
     }
 
     // Parse query to determine what data to fetch
@@ -126,11 +133,12 @@ export async function POST(req: Request) {
       ...context,
       userName: session.user.name || undefined,
       userRole: (session.user as { role?: string }).role || 'User',
+      locale: requestLocale,
     };
 
-    // Build system prompt with context
-    const fullSystemPrompt = SYSTEM_PROMPT +
-      getContextPrompt(userContext) +
+    // Build system prompt with context (locale-aware)
+    const fullSystemPrompt = getSystemPrompt(requestLocale) +
+      getContextPrompt(userContext, requestLocale) +
       getDataPrompt({
         budgets: dataContext.budgets as unknown[],
         skus: dataContext.skuProposals as unknown[],
@@ -140,7 +148,7 @@ export async function POST(req: Request) {
           skuSummary: dataContext.skuSummary,
           otbSummary: dataContext.otbSummary,
         },
-      });
+      }, requestLocale);
 
     // Stream the response
     const result = streamText({
@@ -157,7 +165,7 @@ export async function POST(req: Request) {
     console.error('AI Chat error:', error);
     return new Response(
       JSON.stringify({
-        error: 'Failed to process chat request',
+        error: getErrorMessage('CHAT_PROCESSING_FAILED', locale),
         details: error instanceof Error ? error.message : 'Unknown error',
       }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }

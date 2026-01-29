@@ -77,8 +77,10 @@ export function useAIAssistantChat(options: UseAIChatOptions = {}) {
               role: m.role,
               content: m.content,
             })),
+            context: {
+              locale: language,
+            },
             conversationId: chatState.conversationId,
-            language,
           }),
           signal: abortControllerRef.current.signal,
         });

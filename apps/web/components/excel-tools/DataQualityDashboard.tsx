@@ -6,6 +6,7 @@
  */
 
 import React, { useState, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -94,6 +95,7 @@ export function DataQualityDashboard({
   categoryColumns,
   className = '',
 }: DataQualityDashboardProps) {
+  const t = useTranslations('excelTools.dataQuality');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isFixing, setIsFixing] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
@@ -215,10 +217,10 @@ export function DataQualityDashboard({
           <div>
             <CardTitle className="flex items-center gap-2">
               <Shield className="h-5 w-5" />
-              Data Quality Dashboard
+              {t('title')}
             </CardTitle>
             <CardDescription>
-              Phân tích và cải thiện chất lượng dữ liệu
+              {t('description')}
             </CardDescription>
           </div>
           <div className="flex gap-2">
@@ -232,7 +234,7 @@ export function DataQualityDashboard({
               ) : (
                 <RefreshCw className="h-4 w-4 mr-2" />
               )}
-              Phân tích
+              {t('analyze')}
             </Button>
             {result && result.issues.some((i) => i.autoFixable) && (
               <Button onClick={handleFix} disabled={isFixing}>
@@ -241,7 +243,7 @@ export function DataQualityDashboard({
                 ) : (
                   <Wrench className="h-4 w-4 mr-2" />
                 )}
-                Tự động sửa
+                {t('autoFix')}
               </Button>
             )}
           </div>
@@ -252,17 +254,17 @@ export function DataQualityDashboard({
         {!result ? (
           <div className="text-center py-8 text-muted-foreground">
             <Shield className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>Nhấn "Phân tích" để kiểm tra chất lượng dữ liệu</p>
-            <p className="text-sm mt-1">{data.length} hàng dữ liệu sẵn sàng</p>
+            <p>{t('clickToAnalyze')}</p>
+            <p className="text-sm mt-1">{t('rowsReady', { count: data.length })}</p>
           </div>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="overview">Tổng quan</TabsTrigger>
+              <TabsTrigger value="overview">{t('overview')}</TabsTrigger>
               <TabsTrigger value="issues">
-                Vấn đề ({result.issuesFound})
+                {t('issues')} ({result.issuesFound})
               </TabsTrigger>
-              <TabsTrigger value="details">Chi tiết</TabsTrigger>
+              <TabsTrigger value="details">{t('details')}</TabsTrigger>
             </TabsList>
 
             {/* Overview Tab */}
@@ -270,7 +272,7 @@ export function DataQualityDashboard({
               {/* Quality Score */}
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <Card className="p-4">
-                  <div className="text-sm text-muted-foreground">Tổng điểm</div>
+                  <div className="text-sm text-muted-foreground">{t('totalScore')}</div>
                   <div className={`text-2xl font-bold ${getScoreColor(result.qualityScore.overall)}`}>
                     {result.qualityScore.overall}%
                   </div>
@@ -280,25 +282,25 @@ export function DataQualityDashboard({
                   />
                 </Card>
                 <Card className="p-4">
-                  <div className="text-sm text-muted-foreground">Đầy đủ</div>
+                  <div className="text-sm text-muted-foreground">{t('completeness')}</div>
                   <div className={`text-xl font-bold ${getScoreColor(result.qualityScore.completeness)}`}>
                     {result.qualityScore.completeness}%
                   </div>
                 </Card>
                 <Card className="p-4">
-                  <div className="text-sm text-muted-foreground">Chính xác</div>
+                  <div className="text-sm text-muted-foreground">{t('accuracy')}</div>
                   <div className={`text-xl font-bold ${getScoreColor(result.qualityScore.accuracy)}`}>
                     {result.qualityScore.accuracy}%
                   </div>
                 </Card>
                 <Card className="p-4">
-                  <div className="text-sm text-muted-foreground">Nhất quán</div>
+                  <div className="text-sm text-muted-foreground">{t('consistency')}</div>
                   <div className={`text-xl font-bold ${getScoreColor(result.qualityScore.consistency)}`}>
                     {result.qualityScore.consistency}%
                   </div>
                 </Card>
                 <Card className="p-4">
-                  <div className="text-sm text-muted-foreground">Hợp lệ</div>
+                  <div className="text-sm text-muted-foreground">{t('validity')}</div>
                   <div className={`text-xl font-bold ${getScoreColor(result.qualityScore.validity)}`}>
                     {result.qualityScore.validity}%
                   </div>
@@ -312,7 +314,7 @@ export function DataQualityDashboard({
                     <CheckCircle2 className="h-4 w-4 text-green-500" />
                   </div>
                   <div>
-                    <div className="text-sm text-muted-foreground">Tổng hàng</div>
+                    <div className="text-sm text-muted-foreground">{t('totalRows')}</div>
                     <div className="font-semibold">{result.originalRowCount}</div>
                   </div>
                 </div>
@@ -321,7 +323,7 @@ export function DataQualityDashboard({
                     <AlertCircle className="h-4 w-4 text-red-500" />
                   </div>
                   <div>
-                    <div className="text-sm text-muted-foreground">Nghiêm trọng</div>
+                    <div className="text-sm text-muted-foreground">{t('critical')}</div>
                     <div className="font-semibold">{issuesBySeverity.critical.length}</div>
                   </div>
                 </div>
@@ -330,7 +332,7 @@ export function DataQualityDashboard({
                     <AlertTriangle className="h-4 w-4 text-yellow-500" />
                   </div>
                   <div>
-                    <div className="text-sm text-muted-foreground">Cảnh báo</div>
+                    <div className="text-sm text-muted-foreground">{t('warning')}</div>
                     <div className="font-semibold">{issuesBySeverity.warning.length}</div>
                   </div>
                 </div>
@@ -339,7 +341,7 @@ export function DataQualityDashboard({
                     <Wrench className="h-4 w-4 text-blue-500" />
                   </div>
                   <div>
-                    <div className="text-sm text-muted-foreground">Đã sửa</div>
+                    <div className="text-sm text-muted-foreground">{t('fixed')}</div>
                     <div className="font-semibold">{result.issuesFixed || 0}</div>
                   </div>
                 </div>
@@ -348,7 +350,7 @@ export function DataQualityDashboard({
               {/* Issue Summary by Type */}
               {Object.keys(issuesByType).length > 0 && (
                 <Card className="p-4">
-                  <h4 className="font-medium mb-3">Phân loại vấn đề</h4>
+                  <h4 className="font-medium mb-3">{t('issueCategories')}</h4>
                   <div className="flex flex-wrap gap-2">
                     {Object.entries(issuesByType).map(([type, issues]) => (
                       <Badge key={type} variant="outline">
@@ -365,18 +367,18 @@ export function DataQualityDashboard({
               {result.issues.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <CheckCircle2 className="h-12 w-12 mx-auto mb-4 text-green-500" />
-                  <p>Không phát hiện vấn đề nào!</p>
+                  <p>{t('noIssues')}</p>
                 </div>
               ) : (
                 <div className="rounded-md border">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-[100px]">Mức độ</TableHead>
-                        <TableHead className="w-[80px]">Hàng</TableHead>
-                        <TableHead className="w-[120px]">Cột</TableHead>
-                        <TableHead>Vấn đề</TableHead>
-                        <TableHead className="w-[100px]">Sửa được</TableHead>
+                        <TableHead className="w-[100px]">{t('severity')}</TableHead>
+                        <TableHead className="w-[80px]">{t('row')}</TableHead>
+                        <TableHead className="w-[120px]">{t('column')}</TableHead>
+                        <TableHead>{t('issue')}</TableHead>
+                        <TableHead className="w-[100px]">{t('fixable')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -387,10 +389,10 @@ export function DataQualityDashboard({
                               {getSeverityIcon(issue.severity)}
                               <span className="text-xs capitalize">
                                 {issue.severity === 'critical'
-                                  ? 'Nghiêm trọng'
+                                  ? t('critical')
                                   : issue.severity === 'warning'
-                                  ? 'Cảnh báo'
-                                  : 'Thông tin'}
+                                  ? t('warning')
+                                  : t('info')}
                               </span>
                             </div>
                           </TableCell>
@@ -405,7 +407,7 @@ export function DataQualityDashboard({
                               <p className="text-sm">{issue.message}</p>
                               {issue.suggestion && (
                                 <p className="text-xs text-muted-foreground mt-1">
-                                  Gợi ý: {issue.suggestion}
+                                  {t('suggestion')}: {issue.suggestion}
                                 </p>
                               )}
                             </div>
@@ -413,11 +415,11 @@ export function DataQualityDashboard({
                           <TableCell>
                             {issue.autoFixable ? (
                               <Badge variant="outline" className="text-green-500">
-                                Có
+                                {t('yes')}
                               </Badge>
                             ) : (
                               <Badge variant="outline" className="text-muted-foreground">
-                                Không
+                                {t('no')}
                               </Badge>
                             )}
                           </TableCell>
@@ -427,7 +429,7 @@ export function DataQualityDashboard({
                   </Table>
                   {result.issues.length > 50 && (
                     <div className="p-4 text-center text-sm text-muted-foreground border-t">
-                      Hiển thị 50/{result.issues.length} vấn đề
+                      {t('showingIssues', { total: result.issues.length })}
                     </div>
                   )}
                 </div>
@@ -438,36 +440,36 @@ export function DataQualityDashboard({
             <TabsContent value="details" className="mt-4">
               <div className="space-y-4">
                 <Card className="p-4">
-                  <h4 className="font-medium mb-3">Thống kê chi tiết</h4>
+                  <h4 className="font-medium mb-3">{t('detailedStats')}</h4>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Hàng gốc:</span>
+                      <span className="text-muted-foreground">{t('originalRows')}:</span>
                       <span>{result.originalRowCount}</span>
                     </div>
                     {result.cleanedRowCount !== undefined && (
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Hàng sau khi sửa:</span>
+                        <span className="text-muted-foreground">{t('rowsAfterFix')}:</span>
                         <span>{result.cleanedRowCount}</span>
                       </div>
                     )}
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Bản sao đã xóa:</span>
+                      <span className="text-muted-foreground">{t('duplicatesRemoved')}:</span>
                       <span>{result.summary.duplicatesRemoved}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Outliers phát hiện:</span>
+                      <span className="text-muted-foreground">{t('outliersDetected')}:</span>
                       <span>{result.summary.outliersDetected}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Lỗi định dạng đã sửa:</span>
+                      <span className="text-muted-foreground">{t('formatErrorsFixed')}:</span>
                       <span>{result.summary.formatErrorsFixed}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Không nhất quán đã sửa:</span>
+                      <span className="text-muted-foreground">{t('inconsistenciesFixed')}:</span>
                       <span>{result.summary.inconsistenciesFixed}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Thời gian xử lý:</span>
+                      <span className="text-muted-foreground">{t('processingTime')}:</span>
                       <span>{result.summary.executionTimeMs}ms</span>
                     </div>
                   </div>
@@ -476,7 +478,7 @@ export function DataQualityDashboard({
                 {result.cleanedData && result.cleanedData.length > 0 && (
                   <Button variant="outline" className="w-full">
                     <Download className="h-4 w-4 mr-2" />
-                    Tải dữ liệu đã sửa ({result.cleanedData.length} hàng)
+                    {t('downloadCleaned', { count: result.cleanedData.length })}
                   </Button>
                 )}
               </div>

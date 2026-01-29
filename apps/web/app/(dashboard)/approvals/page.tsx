@@ -103,7 +103,7 @@ export default function ApprovalsPage() {
       }
     } catch (error) {
       console.error('Failed to fetch data:', error);
-      toast.error(locale === 'vi' ? 'Không thể tải phê duyệt' : 'Failed to load approvals');
+      toast.error(t('failedToLoad'));
     } finally {
       setIsLoading(false);
     }
@@ -133,15 +133,15 @@ export default function ApprovalsPage() {
       SKU_APPROVAL: 'bg-green-100 text-green-800',
     };
 
-    const labels: Record<string, string> = {
-      BUDGET_APPROVAL: locale === 'vi' ? 'Ngân sách' : 'Budget',
-      OTB_APPROVAL: locale === 'vi' ? 'Kế hoạch OTB' : 'OTB Plan',
-      SKU_APPROVAL: locale === 'vi' ? 'Đề xuất SKU' : 'SKU Proposal',
+    const labelKeys: Record<string, string> = {
+      BUDGET_APPROVAL: 'budget',
+      OTB_APPROVAL: 'otbPlans',
+      SKU_APPROVAL: 'skuProposals',
     };
 
     return (
       <Badge variant="secondary" className={colors[type]}>
-        {labels[type] || type}
+        {labelKeys[type] ? t(labelKeys[type]) : type}
       </Badge>
     );
   };
@@ -177,7 +177,7 @@ export default function ApprovalsPage() {
         `${workflow.entityDetails.otbPlan?.budget?.season?.code} - ${workflow.entityDetails.otbPlan?.budget?.brand?.name}`
       );
     }
-    return locale === 'vi' ? 'Không xác định' : 'Unknown';
+    return t('unknown');
   };
 
   const getEntityUrl = (workflow: ApprovalWorkflow): string => {
@@ -226,7 +226,7 @@ export default function ApprovalsPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">{locale === 'vi' ? 'Ngân sách' : 'Budget'}</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('budget')}</CardTitle>
             <DollarSign className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
@@ -237,7 +237,7 @@ export default function ApprovalsPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">{locale === 'vi' ? 'Kế hoạch OTB' : 'OTB Plans'}</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('otbPlans')}</CardTitle>
             <BarChart3 className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
@@ -248,7 +248,7 @@ export default function ApprovalsPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">{locale === 'vi' ? 'Đề xuất SKU' : 'SKU Proposals'}</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('skuProposals')}</CardTitle>
             <FileSpreadsheet className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
@@ -262,7 +262,7 @@ export default function ApprovalsPage() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="all">{t('all')} ({summary.total})</TabsTrigger>
-          <TabsTrigger value="budget">{locale === 'vi' ? 'Ngân sách' : 'Budget'} ({summary.budget})</TabsTrigger>
+          <TabsTrigger value="budget">{t('budget')} ({summary.budget})</TabsTrigger>
           <TabsTrigger value="otb">OTB ({summary.otb})</TabsTrigger>
           <TabsTrigger value="sku">SKU ({summary.sku})</TabsTrigger>
           <TabsTrigger value="completed">{t('completed')}</TabsTrigger>

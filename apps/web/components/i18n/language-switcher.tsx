@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useTransition } from 'react';
+import { useTransition, useEffect } from 'react';
 import { useLocale } from 'next-intl';
 import { type Locale } from '@/lib/i18n/config';
 import { cn } from '@/lib/utils';
@@ -17,11 +17,23 @@ export function LanguageSwitcher({ locale: propLocale }: LanguageSwitcherProps) 
   const intlLocale = useLocale();
 
   const currentLocale = (propLocale || intlLocale) as Locale;
-  const nextLocale: Locale = currentLocale === 'vi' ? 'en' : 'vi';
 
-  const toggleLocale = () => {
-    // Set cookie for locale preference
-    document.cookie = `NEXT_LOCALE=${nextLocale}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
+  // Sync localStorage with cookie on mount
+  useEffect(() => {
+    const storedLocale = localStorage.getItem('locale');
+    if (storedLocale && storedLocale !== currentLocale) {
+      // If localStorage differs, update cookie and refresh
+      document.cookie = `NEXT_LOCALE=${storedLocale}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
+      router.refresh();
+    }
+  }, []);
+
+  const switchToLocale = (newLocale: Locale) => {
+    if (newLocale === currentLocale || isPending) return;
+
+    // Persist to both cookie and localStorage
+    document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
+    localStorage.setItem('locale', newLocale);
 
     startTransition(() => {
       router.refresh();
@@ -29,16 +41,40 @@ export function LanguageSwitcher({ locale: propLocale }: LanguageSwitcherProps) 
   };
 
   return (
-    <button
-      onClick={toggleLocale}
-      disabled={isPending}
+    <div
       className={cn(
-        'px-2.5 py-1.5 text-xs font-semibold rounded-md transition-all',
-        'bg-muted hover:bg-muted/80 text-foreground',
+        'inline-flex items-center rounded-md border border-border bg-muted/50 p-0.5',
+        'transition-all duration-200',
         isPending && 'opacity-50 cursor-wait'
       )}
     >
-      {currentLocale === 'vi' ? 'VN' : 'EN'}
-    </button>
+      <button
+        onClick={() => switchToLocale('en')}
+        disabled={isPending}
+        className={cn(
+          'px-2 py-1 text-xs font-semibold rounded transition-all duration-200',
+          currentLocale === 'en'
+            ? 'bg-background text-foreground shadow-sm'
+            : 'text-muted-foreground hover:text-foreground'
+        )}
+        aria-label="Switch to English"
+      >
+        EN
+      </button>
+      <span className="text-muted-foreground/50 text-xs select-none">|</span>
+      <button
+        onClick={() => switchToLocale('vi')}
+        disabled={isPending}
+        className={cn(
+          'px-2 py-1 text-xs font-semibold rounded transition-all duration-200',
+          currentLocale === 'vi'
+            ? 'bg-background text-foreground shadow-sm'
+            : 'text-muted-foreground hover:text-foreground'
+        )}
+        aria-label="Switch to Vietnamese"
+      >
+        VN
+      </button>
+    </div>
   );
 }

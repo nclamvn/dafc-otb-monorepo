@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,18 +11,24 @@ import { AlertTriangle, AlertCircle, Info, Check, Loader2 } from 'lucide-react';
 import type { ReplenishmentAlert, AlertSeverity, ReplenishmentAlertType } from '@/types/replenishment';
 import { format } from 'date-fns';
 
-const SEVERITY_CONFIG: Record<AlertSeverity, { label: string; color: string; icon: typeof AlertTriangle }> = {
-  CRITICAL: { label: 'Nghiêm trọng', color: 'bg-red-100 text-red-800', icon: AlertTriangle },
-  WARNING: { label: 'Cảnh báo', color: 'bg-yellow-100 text-yellow-800', icon: AlertCircle },
-  INFO: { label: 'Thông tin', color: 'bg-blue-100 text-blue-800', icon: Info },
+const SEVERITY_KEYS: Record<AlertSeverity, string> = {
+  CRITICAL: 'critical',
+  WARNING: 'warning',
+  INFO: 'info',
 };
 
-const ALERT_TYPE_LABELS: Record<ReplenishmentAlertType, string> = {
-  BELOW_MIN_MOC: 'Dưới MOC tối thiểu',
-  APPROACHING_MIN: 'Gần mức tối thiểu',
-  ABOVE_MAX_MOC: 'Trên MOC tối đa',
-  STOCKOUT_RISK: 'Nguy cơ hết hàng',
-  LEAD_TIME_RISK: 'Rủi ro lead time',
+const SEVERITY_CONFIG: Record<AlertSeverity, { color: string; icon: typeof AlertTriangle }> = {
+  CRITICAL: { color: 'bg-red-100 text-red-800', icon: AlertTriangle },
+  WARNING: { color: 'bg-yellow-100 text-yellow-800', icon: AlertCircle },
+  INFO: { color: 'bg-blue-100 text-blue-800', icon: Info },
+};
+
+const ALERT_TYPE_KEYS: Record<ReplenishmentAlertType, string> = {
+  BELOW_MIN_MOC: 'belowMinMoc',
+  APPROACHING_MIN: 'approachingMin',
+  ABOVE_MAX_MOC: 'aboveMaxMoc',
+  STOCKOUT_RISK: 'stockoutRisk',
+  LEAD_TIME_RISK: 'leadTimeRisk',
 };
 
 function formatCurrency(value: number): string {
@@ -36,6 +43,7 @@ interface Props {
 }
 
 export function ReplenishmentAlertList({ alerts, selectedAlerts, onSelectChange, onAcknowledge }: Props) {
+  const t = useTranslations('replenishment');
   const [acknowledging, setAcknowledging] = useState<string | null>(null);
 
   const handleAcknowledge = async (id: string) => {
@@ -67,7 +75,7 @@ export function ReplenishmentAlertList({ alerts, selectedAlerts, onSelectChange,
       <Card>
         <CardContent className="py-12 text-center text-muted-foreground">
           <Check className="h-12 w-12 mx-auto mb-4 text-green-500" />
-          Không có cảnh báo nào. Tất cả mức tồn kho đều trong phạm vi mục tiêu.
+          {t('noAlerts')}
         </CardContent>
       </Card>
     );
@@ -76,8 +84,8 @@ export function ReplenishmentAlertList({ alerts, selectedAlerts, onSelectChange,
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Cảnh báo hoạt động</CardTitle>
-        <CardDescription>{alerts.length} cảnh báo cần chú ý</CardDescription>
+        <CardTitle>{t('activeAlerts')}</CardTitle>
+        <CardDescription>{t('alertsNeedAttention', { count: alerts.length })}</CardDescription>
       </CardHeader>
       <CardContent>
         <Table>
@@ -89,15 +97,15 @@ export function ReplenishmentAlertList({ alerts, selectedAlerts, onSelectChange,
                   onCheckedChange={toggleSelectAll}
                 />
               </TableHead>
-              <TableHead>Danh mục</TableHead>
-              <TableHead>Loại</TableHead>
-              <TableHead>Mức độ</TableHead>
-              <TableHead className="text-right">MOC hiện tại</TableHead>
-              <TableHead className="text-right">MOC mục tiêu</TableHead>
-              <TableHead className="text-right">SL đề xuất</TableHead>
-              <TableHead className="text-right">Giá trị</TableHead>
-              <TableHead>Tạo lúc</TableHead>
-              <TableHead className="w-20">Thao tác</TableHead>
+              <TableHead>{t('table.category')}</TableHead>
+              <TableHead>{t('table.type')}</TableHead>
+              <TableHead>{t('table.severity')}</TableHead>
+              <TableHead className="text-right">{t('table.currentMoc')}</TableHead>
+              <TableHead className="text-right">{t('table.targetMoc')}</TableHead>
+              <TableHead className="text-right">{t('table.suggestedQty')}</TableHead>
+              <TableHead className="text-right">{t('table.value')}</TableHead>
+              <TableHead>{t('table.createdAt')}</TableHead>
+              <TableHead className="w-20">{t('table.actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -114,11 +122,11 @@ export function ReplenishmentAlertList({ alerts, selectedAlerts, onSelectChange,
                     />
                   </TableCell>
                   <TableCell className="font-medium">{alert.categoryName || 'N/A'}</TableCell>
-                  <TableCell>{ALERT_TYPE_LABELS[alert.alertType]}</TableCell>
+                  <TableCell>{t(`alertTypes.${ALERT_TYPE_KEYS[alert.alertType]}`)}</TableCell>
                   <TableCell>
                     <Badge className={severityConfig.color}>
                       <Icon className="h-3 w-3 mr-1" />
-                      {severityConfig.label}
+                      {t(`severity.${SEVERITY_KEYS[alert.severity]}`)}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right font-mono">{alert.currentMOC.toFixed(1)}</TableCell>

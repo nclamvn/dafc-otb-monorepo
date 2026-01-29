@@ -37,3 +37,15 @@ export {
   getLocaleFromHeader,
   setLocaleCookie,
 } from './request';
+
+// Server-side message utilities
+export {
+  errorMessages,
+  aiMessages,
+  getErrorMessage,
+  getErrorMessageWithParams,
+  getAlertTitle,
+  getSeverityLabel,
+  getActionText,
+  type ErrorCode,
+} from './server-messages';

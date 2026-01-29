@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { ColumnDef } from '@tanstack/react-table';
 import {
   MoreHorizontal,
@@ -171,6 +172,7 @@ const demoSeasons = [
 
 export default function WSSIPage() {
   const router = useRouter();
+  const t = useTranslations('wssi');
   const currentYear = new Date().getFullYear();
 
   // Filters
@@ -254,11 +256,11 @@ export default function WSSIPage() {
 
   const getWoCBadge = (woc: number) => {
     if (woc < 3) {
-      return <Badge className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">{woc.toFixed(1)} wks</Badge>;
+      return <Badge className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">{woc.toFixed(1)} {t('wks')}</Badge>;
     } else if (woc > 8) {
-      return <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">{woc.toFixed(1)} wks</Badge>;
+      return <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">{woc.toFixed(1)} {t('wks')}</Badge>;
     }
-    return <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">{woc.toFixed(1)} wks</Badge>;
+    return <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">{woc.toFixed(1)} {t('wks')}</Badge>;
   };
 
   const getForecastTypeBadge = (type: string) => {
@@ -282,7 +284,7 @@ export default function WSSIPage() {
   const columns: ColumnDef<WSSIRecord>[] = [
     {
       accessorKey: 'weekNumber',
-      header: 'Tuần',
+      header: t('week'),
       cell: ({ row }) => (
         <div>
           <p className="font-medium">W{row.original.weekNumber}</p>
@@ -293,12 +295,12 @@ export default function WSSIPage() {
     {
       id: 'brand',
       accessorFn: (row) => row.brand?.name || '',
-      header: 'Thương hiệu',
+      header: t('brand'),
       cell: ({ row }) => (
         <div>
           <p className="font-medium">{row.original.brand?.name}</p>
           <p className="text-xs text-muted-foreground">
-            {row.original.category?.name || 'Tất cả danh mục'}
+            {row.original.category?.name || t('allCategories')}
           </p>
         </div>
       ),
@@ -306,24 +308,24 @@ export default function WSSIPage() {
     },
     {
       accessorKey: 'salesActualValue',
-      header: 'Doanh số thực',
+      header: t('actualSales'),
       cell: ({ row }) => (
         <div className="text-right">
           <p className="font-medium">{formatCurrency(row.original.salesActualValue)}</p>
           <p className="text-xs text-muted-foreground">
-            KH: {formatCurrency(row.original.salesPlanValue)}
+            {t('plan')}: {formatCurrency(row.original.salesPlanValue)}
           </p>
         </div>
       ),
     },
     {
       accessorKey: 'salesVariancePct',
-      header: 'Chênh lệch %',
+      header: t('variance'),
       cell: ({ row }) => getVarianceBadge(Number(row.original.salesVariancePct)),
     },
     {
       accessorKey: 'closingStockValue',
-      header: 'Tồn kho',
+      header: t('stock'),
       cell: ({ row }) => (
         <span className="font-medium">
           {formatCurrency(row.original.closingStockValue)}
@@ -332,22 +334,22 @@ export default function WSSIPage() {
     },
     {
       accessorKey: 'weeksOfCover',
-      header: 'WoC',
+      header: t('woc'),
       cell: ({ row }) => getWoCBadge(Number(row.original.weeksOfCover)),
     },
     {
       accessorKey: 'sellThroughPct',
-      header: 'Sell-Through',
+      header: t('sellThrough'),
       cell: ({ row }) => `${Number(row.original.sellThroughPct).toFixed(1)}%`,
     },
     {
       accessorKey: 'forecastType',
-      header: 'Loại',
+      header: t('type'),
       cell: ({ row }) => getForecastTypeBadge(row.original.forecastType),
     },
     {
       accessorKey: 'alerts',
-      header: 'Cảnh báo',
+      header: t('alert'),
       cell: ({ row }) => {
         const activeAlerts = row.original.alerts?.filter(a => !a.isAcknowledged) || [];
         if (activeAlerts.length === 0) return null;
@@ -373,11 +375,11 @@ export default function WSSIPage() {
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => router.push(`/wssi/${record.id}`)}>
                 <Eye className="mr-2 h-4 w-4" />
-                Xem chi tiết
+                {t('viewDetails')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => router.push(`/wssi/${record.id}?reforecast=true`)}>
                 <RefreshCw className="mr-2 h-4 w-4" />
-                Dự báo lại
+                {t('reforecast')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -389,12 +391,12 @@ export default function WSSIPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="WSSI Dashboard"
-        description="Báo cáo Doanh số - Tồn kho - Nhập hàng theo tuần"
+        title={t('title')}
+        description={t('description')}
       >
         <Button variant="outline" onClick={() => router.push('/wssi/alerts')}>
           <Bell className="mr-2 h-4 w-4" />
-          Cảnh báo
+          {t('alerts')}
           {alertCount > 0 && (
             <Badge variant="destructive" className="ml-2">
               {alertCount}
@@ -407,7 +409,7 @@ export default function WSSIPage() {
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Doanh số vs Kế hoạch</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('salesVsPlan')}</CardTitle>
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -417,29 +419,29 @@ export default function WSSIPage() {
                 : '0%'}
             </div>
             <p className="text-xs text-muted-foreground">
-              Thực tế: {formatCurrency(summary?.totals.totalSalesActual || 0)}
+              {t('actual')}: {formatCurrency(summary?.totals.totalSalesActual || 0)}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Tuần tồn kho (WoC)</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('weeksOfCover')}</CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {summary?.totals.averageWoC?.toFixed(1) || '0'} tuần
+              {summary?.totals.averageWoC?.toFixed(1) || '0'} {t('weeks')}
             </div>
             <p className="text-xs text-muted-foreground">
-              Mục tiêu: 4-6 tuần
+              {t('target')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Tỷ lệ Sell-Through</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('sellThruRate')}</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -447,20 +449,20 @@ export default function WSSIPage() {
               {summary?.totals.averageSellThrough?.toFixed(1) || '0'}%
             </div>
             <p className="text-xs text-muted-foreground">
-              {summary?.recordCount || 0} bản ghi
+              {t('records', { count: summary?.recordCount || 0 })}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Cảnh báo hoạt động</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('activeAlerts')}</CardTitle>
             <AlertTriangle className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-600">{alertCount}</div>
             <p className="text-xs text-muted-foreground">
-              Cần xử lý
+              {t('needsAction')}
             </p>
           </CardContent>
         </Card>
@@ -470,7 +472,7 @@ export default function WSSIPage() {
       <div className="flex flex-wrap gap-4">
         <Select value={yearFilter.toString()} onValueChange={(v) => setYearFilter(parseInt(v))}>
           <SelectTrigger className="w-[120px]">
-            <SelectValue placeholder="Năm" />
+            <SelectValue placeholder={t('year')} />
           </SelectTrigger>
           <SelectContent>
             {[currentYear - 1, currentYear, currentYear + 1].map((year) => (
@@ -483,10 +485,10 @@ export default function WSSIPage() {
 
         <Select value={divisionFilter} onValueChange={setDivisionFilter}>
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Khu vực" />
+            <SelectValue placeholder={t('region')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Tất cả khu vực</SelectItem>
+            <SelectItem value="all">{t('allRegions')}</SelectItem>
             {demoDivisions.map((division) => (
               <SelectItem key={division.id} value={division.id}>
                 {division.name}
@@ -497,10 +499,10 @@ export default function WSSIPage() {
 
         <Select value={brandFilter} onValueChange={setBrandFilter}>
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Thương hiệu" />
+            <SelectValue placeholder={t('brand')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Tất cả thương hiệu</SelectItem>
+            <SelectItem value="all">{t('allBrands')}</SelectItem>
             {demoBrands.map((brand) => (
               <SelectItem key={brand.id} value={brand.id}>
                 {brand.name}
@@ -511,10 +513,10 @@ export default function WSSIPage() {
 
         <Select value={seasonFilter} onValueChange={setSeasonFilter}>
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Mùa" />
+            <SelectValue placeholder={t('season')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Tất cả mùa</SelectItem>
+            <SelectItem value="all">{t('allSeasons')}</SelectItem>
             {demoSeasons.map((season) => (
               <SelectItem key={season.id} value={season.id}>
                 {season.code}
@@ -525,7 +527,7 @@ export default function WSSIPage() {
 
         <Button variant="outline" onClick={() => {}}>
           <Filter className="mr-2 h-4 w-4" />
-          Áp dụng
+          {t('apply')}
         </Button>
       </div>
 
@@ -534,7 +536,7 @@ export default function WSSIPage() {
         columns={columns}
         data={filteredRecords}
         searchKey="brand"
-        searchPlaceholder="Tìm theo thương hiệu..."
+        searchPlaceholder={t('searchPlaceholder')}
         isLoading={false}
       />
     </div>

@@ -5,6 +5,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React, { useRef, useState, useEffect, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 
@@ -56,6 +57,7 @@ export function ChartWrapper({
   aspectRatio,
   height,
 }: ChartWrapperProps) {
+  const t = useTranslations('chart');
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState<Dimensions>({ width: 0, height: 0 });
   const [isReady, setIsReady] = useState(false);
@@ -142,7 +144,7 @@ export function ChartWrapper({
   const LoadingState = loadingFallback || (
     <div className="flex flex-col items-center justify-center h-full min-h-[200px] bg-gray-50 rounded-lg border border-dashed border-gray-200">
       <Loader2 className="w-8 h-8 text-gray-400 animate-spin mb-2" />
-      <span className="text-sm text-gray-500">Đang tải biểu đồ...</span>
+      <span className="text-sm text-gray-500">{t('loading')}</span>
     </div>
   );
 
@@ -150,10 +152,10 @@ export function ChartWrapper({
   const ErrorState = errorFallback || (
     <div className="flex flex-col items-center justify-center h-full min-h-[200px] bg-gray-50 rounded-lg border border-dashed border-gray-200">
       <span className="text-sm text-gray-500 text-center px-4">
-        Container quá nhỏ để hiển thị biểu đồ
+        {t('containerTooSmall')}
         <br />
         <span className="text-xs text-gray-400">
-          (Cần ít nhất {minWidth}x{minHeight}px, hiện tại {dimensions.width}x{dimensions.height}px)
+          {t('minimumSize', { minWidth, minHeight, width: dimensions.width, height: dimensions.height })}
         </span>
       </span>
     </div>

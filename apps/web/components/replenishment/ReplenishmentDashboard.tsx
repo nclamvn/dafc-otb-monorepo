@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -146,6 +147,7 @@ function generateDemoDashboard(): ReplenishmentDashboardData {
 }
 
 export function ReplenishmentDashboard({ brandId }: Props) {
+  const t = useTranslations('replenishment');
   const [selectedAlerts, setSelectedAlerts] = useState<string[]>([]);
   const [dashboard, setDashboard] = useState<ReplenishmentDashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -205,20 +207,20 @@ export function ReplenishmentDashboard({ brandId }: Props) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Quản lý Bổ sung hàng</h1>
-          <p className="text-muted-foreground">Giám sát MOC/MOQ</p>
+          <h1 className="text-2xl font-bold">{t('title')}</h1>
+          <p className="text-muted-foreground">{t('description')}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleCheckNeeds} disabled={isChecking}>
             <RefreshCw className={`h-4 w-4 mr-2 ${isChecking ? 'animate-spin' : ''}`} />
-            {isChecking ? 'Đang kiểm tra...' : 'Kiểm tra nhu cầu'}
+            {isChecking ? t('checking') : t('checkDemand')}
           </Button>
           {selectedAlerts.length > 0 && (
             <Button onClick={handleCreateOrder} disabled={isCreatingOrder}>
               {isCreatingOrder ? (
-                <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Đang tạo...</>
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" />{t('creating')}</>
               ) : (
-                <><ShoppingCart className="h-4 w-4 mr-2" />Tạo đơn hàng ({selectedAlerts.length})</>
+                <><ShoppingCart className="h-4 w-4 mr-2" />{t('createOrder')} ({selectedAlerts.length})</>
               )}
             </Button>
           )}
@@ -228,11 +230,11 @@ export function ReplenishmentDashboard({ brandId }: Props) {
       {/* Summary */}
       <div className="grid grid-cols-4 gap-4">
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Danh mục</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">{t('categories')}</CardTitle></CardHeader>
           <CardContent><div className="text-2xl font-bold">{summary.totalCategories}</div></CardContent>
         </Card>
         <Card className="border-red-200 bg-red-50">
-          <CardHeader className="pb-2"><CardTitle className="text-sm text-red-700">Nghiêm trọng</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-sm text-red-700">{t('critical')}</CardTitle></CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-red-500" />
@@ -241,7 +243,7 @@ export function ReplenishmentDashboard({ brandId }: Props) {
           </CardContent>
         </Card>
         <Card className="border-yellow-200 bg-yellow-50">
-          <CardHeader className="pb-2"><CardTitle className="text-sm text-yellow-700">Cảnh báo</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-sm text-yellow-700">{t('warning')}</CardTitle></CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
               <Clock className="h-5 w-5 text-yellow-500" />
@@ -250,7 +252,7 @@ export function ReplenishmentDashboard({ brandId }: Props) {
           </CardContent>
         </Card>
         <Card className="border-green-200 bg-green-50">
-          <CardHeader className="pb-2"><CardTitle className="text-sm text-green-700">Bình thường</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-sm text-green-700">{t('normal')}</CardTitle></CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-green-500" />
@@ -263,9 +265,9 @@ export function ReplenishmentDashboard({ brandId }: Props) {
       {/* Tabs */}
       <Tabs defaultValue="moc">
         <TabsList>
-          <TabsTrigger value="moc">Trạng thái MOC</TabsTrigger>
+          <TabsTrigger value="moc">{t('mocStatus')}</TabsTrigger>
           <TabsTrigger value="alerts">
-            Cảnh báo{dashboard?.alerts?.length ? <Badge variant="destructive" className="ml-2">{dashboard.alerts.length}</Badge> : null}
+            {t('alerts')}{dashboard?.alerts?.length ? <Badge variant="destructive" className="ml-2">{dashboard.alerts.length}</Badge> : null}
           </TabsTrigger>
         </TabsList>
         <TabsContent value="moc" className="mt-4">

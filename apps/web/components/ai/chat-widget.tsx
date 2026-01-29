@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { useLocale, useTranslations } from 'next-intl';
 import {
   MessageSquare,
   X,
@@ -59,11 +60,18 @@ interface AIChatWidgetProps {
 
 export function AIChatWidget({
   context: _context,
-  defaultLanguage = 'en',
 }: AIChatWidgetProps) {
   const pathname = usePathname();
+  const locale = useLocale() as 'en' | 'vi';
+  const t = useTranslations('ai');
   const [isOpen, setIsOpen] = useState(false);
-  const [language, setLanguage] = useState<'en' | 'vi'>(defaultLanguage);
+  // Sync language with global locale for voice input
+  const [language, setLanguage] = useState<'en' | 'vi'>(locale);
+
+  // Update language when locale changes
+  useEffect(() => {
+    setLanguage(locale);
+  }, [locale]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -178,16 +186,10 @@ export function AIChatWidget({
                 </div>
                 <div>
                   <h3 className="font-semibold text-sm">
-                    {language === 'vi' ? 'Trợ lý AI' : 'AI Assistant'}
+                    {t('assistant')}
                   </h3>
                   <p className="text-xs text-muted-foreground">
-                    {isThinking
-                      ? language === 'vi'
-                        ? 'Đang suy nghĩ...'
-                        : 'Thinking...'
-                      : language === 'vi'
-                        ? 'Sẵn sàng hỗ trợ'
-                        : 'Ready to help'}
+                    {isThinking ? t('thinking') : t('readyToHelp')}
                   </p>
                 </div>
               </div>
@@ -210,7 +212,7 @@ export function AIChatWidget({
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    {language === 'vi' ? 'Switch to English' : 'Chuyển sang Tiếng Việt'}
+                    {t('switchLanguage')}
                   </TooltipContent>
                 </Tooltip>
 
@@ -229,7 +231,7 @@ export function AIChatWidget({
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    {language === 'vi' ? 'Mở trang đầy đủ' : 'Open full page'}
+                    {t('openFullPage')}
                   </TooltipContent>
                 </Tooltip>
 
@@ -254,9 +256,7 @@ export function AIChatWidget({
                       <Sparkles className="h-6 w-6 text-primary" />
                     </div>
                     <p className="text-sm text-muted-foreground mb-4">
-                      {language === 'vi'
-                        ? 'Xin chào! Tôi có thể giúp gì cho bạn?'
-                        : 'Hello! How can I help you today?'}
+                      {t('welcomeMessage')}
                     </p>
                     {/* Quick Suggestions */}
                     <div className="flex flex-wrap justify-center gap-2">
@@ -371,7 +371,7 @@ export function AIChatWidget({
               >
                 <div className="flex items-center justify-center gap-2 text-sm text-red-600 dark:text-red-400">
                   <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-                  {language === 'vi' ? 'Đang ghi âm...' : 'Recording...'}
+                  {t('recording')}
                 </div>
               </motion.div>
             )}
@@ -398,13 +398,7 @@ export function AIChatWidget({
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                      {isListening
-                        ? language === 'vi'
-                          ? 'Dừng ghi âm'
-                          : 'Stop'
-                        : language === 'vi'
-                          ? 'Giọng nói'
-                          : 'Voice'}
+                      {isListening ? t('stopRecording') : t('voiceInput')}
                     </TooltipContent>
                   </Tooltip>
                 )}
@@ -413,11 +407,7 @@ export function AIChatWidget({
                   ref={inputRef}
                   value={input}
                   onChange={handleInputChange}
-                  placeholder={
-                    language === 'vi'
-                      ? 'Nhập tin nhắn...'
-                      : 'Type a message...'
-                  }
+                  placeholder={t('inputPlaceholder')}
                   disabled={isLoading}
                   className="flex-1"
                 />
