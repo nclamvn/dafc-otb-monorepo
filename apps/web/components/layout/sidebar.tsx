@@ -554,62 +554,62 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                   </button>
                 ) : (
                   <button className="flex items-center gap-3 w-full p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
-                    <Avatar className="h-9 w-9">
-                      <AvatarFallback className="bg-[hsl(30_43%_72%)] text-black font-semibold">
+                    <Avatar className="h-10 w-10">
+                      <AvatarFallback className="bg-[hsl(30_43%_72%)] text-black font-semibold text-base">
                         {session.user.name ? getInitials(session.user.name) : 'U'}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0 text-left">
-                      <p className="text-sm font-medium truncate">{session.user.name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{session.user.email}</p>
+                      <p className="text-base font-medium truncate">{session.user.name}</p>
+                      <p className="text-sm text-muted-foreground truncate">{session.user.email}</p>
                     </div>
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    <ChevronDown className="h-5 w-5 text-muted-foreground" />
                   </button>
                 )}
               </DropdownMenuTrigger>
               <DropdownMenuContent
-                className="w-56"
+                className="w-64"
                 align="start"
                 side={collapsed ? "right" : "top"}
                 sideOffset={4}
               >
-                <DropdownMenuLabel className="font-normal">
+                <DropdownMenuLabel className="font-normal py-2.5 px-3">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{session.user.name}</p>
-                    <p className="text-xs leading-none text-muted-foreground">{session.user.email}</p>
+                    <p className="text-base font-semibold leading-none">{session.user.name}</p>
+                    <p className="text-sm leading-none text-muted-foreground">{session.user.email}</p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
+                <DropdownMenuItem asChild className="py-2.5 px-3 text-base">
                   <Link href="/settings/profile" className="cursor-pointer">
-                    <User className="mr-2 h-4 w-4" />
+                    <User className="mr-2.5 h-5 w-5" />
                     <span>{tSettings('profile')}</span>
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
+                <DropdownMenuItem asChild className="py-2.5 px-3 text-base">
                   <Link href="/settings" className="cursor-pointer">
-                    <Settings className="mr-2 h-4 w-4" />
+                    <Settings className="mr-2.5 h-5 w-5" />
                     <span>{tSettings('title')}</span>
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
+                <DropdownMenuItem asChild className="py-2.5 px-3 text-base">
                   <Link href="/settings/billing" className="cursor-pointer">
-                    <CreditCard className="mr-2 h-4 w-4" />
+                    <CreditCard className="mr-2.5 h-5 w-5" />
                     <span>{tSettings('billing')}</span>
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
+                <DropdownMenuItem asChild className="py-2.5 px-3 text-base">
                   <Link href="/help" className="cursor-pointer">
-                    <HelpCircle className="mr-2 h-4 w-4" />
+                    <HelpCircle className="mr-2.5 h-5 w-5" />
                     <span>{t('help')}</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() => signOut({ callbackUrl: '/login' })}
-                  className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
+                  className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50 py-2.5 px-3 text-base"
                 >
-                  <LogOut className="mr-2 h-4 w-4" />
+                  <LogOut className="mr-2.5 h-5 w-5" />
                   <span>{tAuth('logout')}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
