@@ -61,12 +61,16 @@ import {
 import { useState } from 'react';
 import { User, CreditCard, HelpCircle } from 'lucide-react';
 
-// Main navigation items - Dashboard first, then OTB workflow
-const navigation = [
-  { key: 'dashboard', href: '/', icon: LayoutDashboard },         // Overview
-  { key: 'budget', href: '/budget', icon: DollarSign },           // Step 1: Financial Budget
-  { key: 'otb', href: '/otb-analysis', icon: TrendingUp },        // Step 2: OTB Analysis
-  { key: 'sku', href: '/sku-proposal', icon: Package },           // Step 3: SKU Proposal
+// Core navigation items - matches legacy app (Main section)
+const coreNavigation = [
+  { key: 'budget', href: '/budget', icon: DollarSign },           // Financial Budget
+  { key: 'otb', href: '/otb-analysis', icon: TrendingUp },        // OTB Analysis
+  { key: 'sku', href: '/sku-proposal', icon: Package },           // SKU Proposal
+];
+
+// Extended navigation items (new features, hidden in "More" section)
+const extendedNavigation = [
+  { key: 'dashboard', href: '/', icon: LayoutDashboard },         // Dashboard Overview
   { key: 'wssi', href: '/wssi', icon: CalendarDays },             // WSSI Planning
   { key: 'approvals', href: '/approvals', icon: CheckSquare },    // Approvals
   { key: 'settings', href: '/settings', icon: Settings },         // Settings
@@ -139,24 +143,29 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
     pathname === '/clearance' || pathname === '/replenishment' || pathname === '/forecasting'
   );
 
+  // State for extended/more menu
+  const [moreOpen, setMoreOpen] = useState(
+    pathname === '/' || pathname === '/wssi' || pathname === '/approvals' || pathname.startsWith('/settings')
+  );
+
   return (
     <TooltipProvider delayDuration={0}>
       <aside className={cn(
-        "fixed left-0 top-0 z-40 h-screen bg-card border-r border-border flex flex-col transition-all duration-300",
+        "fixed left-0 top-0 z-40 h-screen flex flex-col transition-all duration-300",
+        "bg-[#601818] border-r border-[#7a2020]", // Legacy maroon background
         collapsed ? "w-[72px]" : "w-[260px]"
       )}>
-        {/* Logo & Collapse Toggle */}
+        {/* Logo & Close Button - Legacy Style */}
         <div className={cn(
-          "h-12 flex items-center border-b border-border",
-          collapsed ? "px-2 justify-center" : "px-3 justify-between"
+          "h-14 flex items-center border-b border-[#7a2020]",
+          collapsed ? "px-2 justify-center" : "px-4 justify-between"
         )}>
           {collapsed ? (
-            /* Collapsed: Only show toggle button */
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
                   onClick={onToggleCollapse}
-                  className="flex items-center justify-center w-10 h-10 rounded-lg text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all duration-150"
+                  className="flex items-center justify-center w-10 h-10 rounded-lg text-[#D7B797] hover:bg-[#7a2020] transition-all duration-150"
                 >
                   <ChevronRight className="h-5 w-5" />
                 </button>
@@ -166,23 +175,16 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
               </TooltipContent>
             </Tooltip>
           ) : (
-            /* Expanded: Logo + Name + Toggle */
             <>
-              <Link href="/" className="flex items-center justify-start">
-                <Image
-                  src="/logo.png"
-                  alt="DAFC"
-                  width={200}
-                  height={107}
-                  priority
-                  unoptimized
-                  style={{ width: '100px', height: 'auto' }}
-                />
+              <Link href="/" className="flex items-center gap-2">
+                {/* Crown Icon + DAFC-OTB Title */}
+                <span className="text-[#D7B797] text-xl">👑</span>
+                <span className="text-white font-bold text-lg tracking-wide">DAFC-OTB</span>
               </Link>
               {onToggleCollapse && (
                 <button
                   onClick={onToggleCollapse}
-                  className="flex items-center justify-center w-8 h-8 rounded-lg text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all duration-150"
+                  className="flex items-center justify-center w-8 h-8 rounded text-[#D7B797] hover:bg-[#7a2020] transition-all duration-150"
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </button>
@@ -191,30 +193,32 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
           )}
         </div>
 
-        {/* Navigation */}
-        <nav className={cn("flex-1 overflow-y-auto py-2", collapsed ? "px-2" : "px-3")}>
-          <ul className="space-y-0.5">
-            {navigation.map((item) => {
-              const isActive = pathname === item.href;
+        {/* Navigation - Legacy Style */}
+        <nav className={cn("flex-1 overflow-y-auto py-3", collapsed ? "px-2" : "px-3")}>
+          {/* Main Section Label */}
+          {!collapsed && (
+            <div className="px-2 mb-2">
+              <span className="text-white/80 text-sm font-medium">Main</span>
+            </div>
+          )}
+
+          {/* Core Navigation - Legacy 3 items */}
+          <ul className="space-y-1">
+            {coreNavigation.map((item) => {
+              const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
               const linkContent = (
                 <Link
                   href={item.href}
                   className={cn(
-                    'group flex items-center gap-2.5 rounded-lg text-sm font-medium transition-all duration-150 relative',
-                    collapsed ? 'px-2.5 py-1.5 justify-center' : 'px-2.5 py-1.5',
+                    'group flex items-center gap-3 rounded text-base font-medium transition-all duration-150',
+                    collapsed ? 'px-2.5 py-2 justify-center' : 'px-3 py-2',
                     isActive
-                      ? 'bg-primary/10 dark:bg-primary/20 text-primary'
-                      : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground dark:hover:text-white'
+                      ? 'bg-[#7a2020] text-[#D7B797]'
+                      : 'text-[#D7B797] hover:bg-[#7a2020]/50'
                   )}
                 >
-                  {isActive && !collapsed && (
-                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-primary rounded-r-full" />
-                  )}
-                  <item.icon className={cn(
-                    'h-5 w-5 flex-shrink-0',
-                    isActive ? 'text-primary' : 'text-muted-foreground/70 group-hover:text-foreground dark:group-hover:text-white'
-                  )} />
-                  {!collapsed && <span className="flex-1 uppercase font-semibold tracking-wide">{t(item.key)}</span>}
+                  <item.icon className="h-5 w-5 flex-shrink-0" />
+                  {!collapsed && <span>{t(item.key)}</span>}
                 </Link>
               );
 
@@ -234,7 +238,45 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
               );
             })}
 
-            {/* Master Data Collapsible */}
+            {/* Divider */}
+            <li className="my-3 border-t border-[#7a2020]" />
+
+            {/* Extended/More Navigation - New features */}
+            {!collapsed && (
+              <li>
+                <Collapsible open={moreOpen} onOpenChange={setMoreOpen}>
+                  <CollapsibleTrigger asChild>
+                    <button className="flex w-full items-center gap-3 px-3 py-2 rounded text-base font-medium text-[#D7B797]/70 hover:bg-[#7a2020]/50 transition-all duration-150">
+                      <LayoutDashboard className="h-5 w-5 flex-shrink-0" />
+                      <span className="flex-1 text-left">{tUi('more')}</span>
+                      <ChevronDown className={cn("h-4 w-4 transition-transform", moreOpen && "rotate-180")} />
+                    </button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-1 space-y-0.5 pl-2">
+                    {extendedNavigation.map((item) => {
+                      const isActive = pathname === item.href;
+                      return (
+                        <Link
+                          key={item.key}
+                          href={item.href}
+                          className={cn(
+                            'flex items-center gap-3 px-3 py-1.5 rounded text-sm font-medium transition-all duration-150',
+                            isActive
+                              ? 'bg-[#7a2020] text-[#D7B797]'
+                              : 'text-[#D7B797]/70 hover:bg-[#7a2020]/50 hover:text-[#D7B797]'
+                          )}
+                        >
+                          <item.icon className="h-4 w-4 flex-shrink-0" />
+                          <span>{t(item.key)}</span>
+                        </Link>
+                      );
+                    })}
+                  </CollapsibleContent>
+                </Collapsible>
+              </li>
+            )}
+
+            {/* Master Data Collapsible - Legacy Style */}
             <li>
               {collapsed ? (
                 <Tooltip>
@@ -242,16 +284,13 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                     <Link
                       href="/master-data/brands"
                       className={cn(
-                        'group flex items-center justify-center px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-150',
+                        'flex items-center justify-center px-2.5 py-2 rounded text-base font-medium transition-all duration-150',
                         pathname.startsWith('/master-data')
-                          ? 'bg-primary/10 dark:bg-primary/20 text-primary'
-                          : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground dark:hover:text-white'
+                          ? 'bg-[#7a2020] text-[#D7B797]'
+                          : 'text-[#D7B797]/70 hover:bg-[#7a2020]/50'
                       )}
                     >
-                      <Database className={cn(
-                        'h-5 w-5 flex-shrink-0',
-                        pathname.startsWith('/master-data') ? 'text-primary' : 'text-muted-foreground/70 group-hover:text-foreground dark:group-hover:text-white'
-                      )} />
+                      <Database className="h-5 w-5" />
                     </Link>
                   </TooltipTrigger>
                   <TooltipContent side="right" sideOffset={10}>
@@ -263,29 +302,18 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                   <CollapsibleTrigger asChild>
                     <button
                       className={cn(
-                        'group flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 relative',
+                        'flex w-full items-center gap-3 px-3 py-2 rounded text-base font-medium transition-all duration-150',
                         pathname.startsWith('/master-data')
-                          ? 'bg-primary/10 dark:bg-primary/20 text-primary'
-                          : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground dark:hover:text-white'
+                          ? 'bg-[#7a2020] text-[#D7B797]'
+                          : 'text-[#D7B797]/70 hover:bg-[#7a2020]/50'
                       )}
                     >
-                      {pathname.startsWith('/master-data') && (
-                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-primary rounded-r-full" />
-                      )}
-                      <Database className={cn(
-                        'h-5 w-5 flex-shrink-0',
-                        pathname.startsWith('/master-data') ? 'text-primary' : 'text-muted-foreground/70 group-hover:text-foreground dark:group-hover:text-white'
-                      )} />
-                      <span className="flex-1 text-left uppercase font-semibold tracking-wide">{t('masterData')}</span>
-                      <ChevronDown
-                        className={cn(
-                          'h-4 w-4 text-muted-foreground/70 transition-transform',
-                          masterDataOpen && 'rotate-180'
-                        )}
-                      />
+                      <Database className="h-5 w-5" />
+                      <span className="flex-1 text-left">{t('masterData')}</span>
+                      <ChevronDown className={cn('h-4 w-4 transition-transform', masterDataOpen && 'rotate-180')} />
                     </button>
                   </CollapsibleTrigger>
-                  <CollapsibleContent className="mt-0.5 space-y-0.5 pl-4">
+                  <CollapsibleContent className="mt-1 space-y-0.5 pl-2">
                     {masterDataItems.map((item) => {
                       const isActive = pathname === item.href;
                       return (
@@ -293,13 +321,13 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                           key={item.key}
                           href={item.href}
                           className={cn(
-                            'group flex items-center gap-2.5 px-2.5 py-1 rounded-lg text-sm font-medium transition-all duration-150',
+                            'flex items-center gap-3 px-3 py-1.5 rounded text-sm font-medium transition-all duration-150',
                             isActive
-                              ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground'
-                              : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground/80 dark:hover:text-white'
+                              ? 'bg-[#7a2020] text-[#D7B797]'
+                              : 'text-[#D7B797]/70 hover:bg-[#7a2020]/50 hover:text-[#D7B797]'
                           )}
                         >
-                          <item.icon className={cn('h-4 w-4', isActive ? 'text-primary dark:text-primary-foreground' : 'text-muted-foreground/70 group-hover:text-foreground dark:group-hover:text-white')} />
+                          <item.icon className="h-4 w-4" />
                           <span>{tMasterData(item.key)}</span>
                         </Link>
                       );
@@ -309,7 +337,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
               )}
             </li>
 
-            {/* Analytics Collapsible */}
+            {/* Analytics Collapsible - Legacy Style */}
             <li>
               {collapsed ? (
                 <Tooltip>
@@ -317,16 +345,13 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                     <Link
                       href="/analytics"
                       className={cn(
-                        'group flex items-center justify-center px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-150',
+                        'flex items-center justify-center px-2.5 py-2 rounded text-base font-medium transition-all duration-150',
                         pathname.startsWith('/analytics')
-                          ? 'bg-primary/10 dark:bg-primary/20 text-primary'
-                          : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground dark:hover:text-white'
+                          ? 'bg-[#7a2020] text-[#D7B797]'
+                          : 'text-[#D7B797]/70 hover:bg-[#7a2020]/50'
                       )}
                     >
-                      <BarChart3 className={cn(
-                        'h-5 w-5 flex-shrink-0',
-                        pathname.startsWith('/analytics') ? 'text-primary' : 'text-muted-foreground/70 group-hover:text-foreground dark:group-hover:text-white'
-                      )} />
+                      <BarChart3 className="h-5 w-5" />
                     </Link>
                   </TooltipTrigger>
                   <TooltipContent side="right" sideOffset={10}>
@@ -338,29 +363,18 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                   <CollapsibleTrigger asChild>
                     <button
                       className={cn(
-                        'group flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 relative',
+                        'flex w-full items-center gap-3 px-3 py-2 rounded text-base font-medium transition-all duration-150',
                         pathname.startsWith('/analytics')
-                          ? 'bg-primary/10 dark:bg-primary/20 text-primary'
-                          : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground dark:hover:text-white'
+                          ? 'bg-[#7a2020] text-[#D7B797]'
+                          : 'text-[#D7B797]/70 hover:bg-[#7a2020]/50'
                       )}
                     >
-                      {pathname.startsWith('/analytics') && (
-                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-primary rounded-r-full" />
-                      )}
-                      <BarChart3 className={cn(
-                        'h-5 w-5 flex-shrink-0',
-                        pathname.startsWith('/analytics') ? 'text-primary' : 'text-muted-foreground/70 group-hover:text-foreground dark:group-hover:text-white'
-                      )} />
-                      <span className="flex-1 text-left uppercase font-semibold tracking-wide">{t('analytics')}</span>
-                      <ChevronDown
-                        className={cn(
-                          'h-4 w-4 text-muted-foreground/70 transition-transform',
-                          analyticsOpen && 'rotate-180'
-                        )}
-                      />
+                      <BarChart3 className="h-5 w-5" />
+                      <span className="flex-1 text-left">{t('analytics')}</span>
+                      <ChevronDown className={cn('h-4 w-4 transition-transform', analyticsOpen && 'rotate-180')} />
                     </button>
                   </CollapsibleTrigger>
-                  <CollapsibleContent className="mt-0.5 space-y-0.5 pl-4">
+                  <CollapsibleContent className="mt-1 space-y-0.5 pl-2">
                     {analyticsItems.map((item) => {
                       const isActive = pathname === item.href;
                       return (
@@ -368,13 +382,13 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                           key={item.key}
                           href={item.href}
                           className={cn(
-                            'group flex items-center gap-2.5 px-2.5 py-1 rounded-lg text-sm font-medium transition-all duration-150',
+                            'flex items-center gap-3 px-3 py-1.5 rounded text-sm font-medium transition-all duration-150',
                             isActive
-                              ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground'
-                              : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground/80 dark:hover:text-white'
+                              ? 'bg-[#7a2020] text-[#D7B797]'
+                              : 'text-[#D7B797]/70 hover:bg-[#7a2020]/50 hover:text-[#D7B797]'
                           )}
                         >
-                          <item.icon className={cn('h-4 w-4', isActive ? 'text-primary dark:text-primary-foreground' : 'text-muted-foreground/70 group-hover:text-foreground dark:group-hover:text-white')} />
+                          <item.icon className="h-4 w-4" />
                           <span>{tAnalytics(item.key)}</span>
                         </Link>
                       );
@@ -384,7 +398,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
               )}
             </li>
 
-            {/* AI Features Collapsible */}
+            {/* AI Features Collapsible - Legacy Style */}
             <li>
               {collapsed ? (
                 <Tooltip>
@@ -392,16 +406,13 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                     <Link
                       href="/ai-assistant"
                       className={cn(
-                        'group flex items-center justify-center px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-150',
+                        'flex items-center justify-center px-2.5 py-2 rounded text-base font-medium transition-all duration-150',
                         (pathname.startsWith('/ai-') || pathname === '/predictive-alerts')
-                          ? 'bg-primary/10 dark:bg-primary/20 text-primary'
-                          : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground dark:hover:text-white'
+                          ? 'bg-[#7a2020] text-[#D7B797]'
+                          : 'text-[#D7B797]/70 hover:bg-[#7a2020]/50'
                       )}
                     >
-                      <Bot className={cn(
-                        'h-5 w-5 flex-shrink-0',
-                        (pathname.startsWith('/ai-') || pathname === '/predictive-alerts') ? 'text-primary' : 'text-muted-foreground/70 group-hover:text-foreground dark:group-hover:text-white'
-                      )} />
+                      <Bot className="h-5 w-5" />
                     </Link>
                   </TooltipTrigger>
                   <TooltipContent side="right" sideOffset={10}>
@@ -413,29 +424,18 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                   <CollapsibleTrigger asChild>
                     <button
                       className={cn(
-                        'group flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 relative',
+                        'flex w-full items-center gap-3 px-3 py-2 rounded text-base font-medium transition-all duration-150',
                         (pathname.startsWith('/ai-') || pathname === '/predictive-alerts')
-                          ? 'bg-primary/10 dark:bg-primary/20 text-primary'
-                          : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground dark:hover:text-white'
+                          ? 'bg-[#7a2020] text-[#D7B797]'
+                          : 'text-[#D7B797]/70 hover:bg-[#7a2020]/50'
                       )}
                     >
-                      {(pathname.startsWith('/ai-') || pathname === '/predictive-alerts') && (
-                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-primary rounded-r-full" />
-                      )}
-                      <Bot className={cn(
-                        'h-5 w-5 flex-shrink-0',
-                        (pathname.startsWith('/ai-') || pathname === '/predictive-alerts') ? 'text-primary' : 'text-muted-foreground/70 group-hover:text-foreground dark:group-hover:text-white'
-                      )} />
-                      <span className="flex-1 text-left uppercase font-semibold tracking-wide">AI</span>
-                      <ChevronDown
-                        className={cn(
-                          'h-4 w-4 text-muted-foreground/70 transition-transform',
-                          aiOpen && 'rotate-180'
-                        )}
-                      />
+                      <Bot className="h-5 w-5" />
+                      <span className="flex-1 text-left">AI</span>
+                      <ChevronDown className={cn('h-4 w-4 transition-transform', aiOpen && 'rotate-180')} />
                     </button>
                   </CollapsibleTrigger>
-                  <CollapsibleContent className="mt-0.5 space-y-0.5 pl-4">
+                  <CollapsibleContent className="mt-1 space-y-0.5 pl-2">
                     {aiItems.map((item) => {
                       const isActive = pathname === item.href;
                       return (
@@ -443,13 +443,13 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                           key={item.key}
                           href={item.href}
                           className={cn(
-                            'group flex items-center gap-2.5 px-2.5 py-1 rounded-lg text-sm font-medium transition-all duration-150',
+                            'flex items-center gap-3 px-3 py-1.5 rounded text-sm font-medium transition-all duration-150',
                             isActive
-                              ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground'
-                              : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground/80 dark:hover:text-white'
+                              ? 'bg-[#7a2020] text-[#D7B797]'
+                              : 'text-[#D7B797]/70 hover:bg-[#7a2020]/50 hover:text-[#D7B797]'
                           )}
                         >
-                          <item.icon className={cn('h-4 w-4', isActive ? 'text-primary dark:text-primary-foreground' : 'text-muted-foreground/70 group-hover:text-foreground dark:group-hover:text-white')} />
+                          <item.icon className="h-4 w-4" />
                           <span>{t(item.key)}</span>
                         </Link>
                       );
@@ -459,7 +459,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
               )}
             </li>
 
-            {/* Operations Collapsible (Phase 3) */}
+            {/* Operations Collapsible - Legacy Style */}
             <li>
               {collapsed ? (
                 <Tooltip>
@@ -467,16 +467,13 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                     <Link
                       href="/clearance"
                       className={cn(
-                        'group flex items-center justify-center px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-150',
+                        'flex items-center justify-center px-2.5 py-2 rounded text-base font-medium transition-all duration-150',
                         (pathname === '/clearance' || pathname === '/replenishment' || pathname === '/forecasting')
-                          ? 'bg-primary/10 dark:bg-primary/20 text-primary'
-                          : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground dark:hover:text-white'
+                          ? 'bg-[#7a2020] text-[#D7B797]'
+                          : 'text-[#D7B797]/70 hover:bg-[#7a2020]/50'
                       )}
                     >
-                      <TrendingDown className={cn(
-                        'h-5 w-5 flex-shrink-0',
-                        (pathname === '/clearance' || pathname === '/replenishment' || pathname === '/forecasting') ? 'text-primary' : 'text-muted-foreground/70 group-hover:text-foreground dark:group-hover:text-white'
-                      )} />
+                      <TrendingDown className="h-5 w-5" />
                     </Link>
                   </TooltipTrigger>
                   <TooltipContent side="right" sideOffset={10}>
@@ -488,29 +485,18 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                   <CollapsibleTrigger asChild>
                     <button
                       className={cn(
-                        'group flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 relative',
+                        'flex w-full items-center gap-3 px-3 py-2 rounded text-base font-medium transition-all duration-150',
                         (pathname === '/clearance' || pathname === '/replenishment' || pathname === '/forecasting')
-                          ? 'bg-primary/10 dark:bg-primary/20 text-primary'
-                          : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground dark:hover:text-white'
+                          ? 'bg-[#7a2020] text-[#D7B797]'
+                          : 'text-[#D7B797]/70 hover:bg-[#7a2020]/50'
                       )}
                     >
-                      {(pathname === '/clearance' || pathname === '/replenishment' || pathname === '/forecasting') && (
-                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 bg-primary rounded-r-full" />
-                      )}
-                      <TrendingDown className={cn(
-                        'h-5 w-5 flex-shrink-0',
-                        (pathname === '/clearance' || pathname === '/replenishment' || pathname === '/forecasting') ? 'text-primary' : 'text-muted-foreground/70 group-hover:text-foreground dark:group-hover:text-white'
-                      )} />
-                      <span className="flex-1 text-left uppercase font-semibold tracking-wide">{t('operations')}</span>
-                      <ChevronDown
-                        className={cn(
-                          'h-4 w-4 text-muted-foreground/70 transition-transform',
-                          operationsOpen && 'rotate-180'
-                        )}
-                      />
+                      <TrendingDown className="h-5 w-5" />
+                      <span className="flex-1 text-left">{t('operations')}</span>
+                      <ChevronDown className={cn('h-4 w-4 transition-transform', operationsOpen && 'rotate-180')} />
                     </button>
                   </CollapsibleTrigger>
-                  <CollapsibleContent className="mt-0.5 space-y-0.5 pl-4">
+                  <CollapsibleContent className="mt-1 space-y-0.5 pl-2">
                     {operationsItems.map((item) => {
                       const isActive = pathname === item.href;
                       return (
@@ -518,13 +504,13 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                           key={item.key}
                           href={item.href}
                           className={cn(
-                            'group flex items-center gap-2.5 px-2.5 py-1 rounded-lg text-sm font-medium transition-all duration-150',
+                            'flex items-center gap-3 px-3 py-1.5 rounded text-sm font-medium transition-all duration-150',
                             isActive
-                              ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground'
-                              : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground/80 dark:hover:text-white'
+                              ? 'bg-[#7a2020] text-[#D7B797]'
+                              : 'text-[#D7B797]/70 hover:bg-[#7a2020]/50 hover:text-[#D7B797]'
                           )}
                         >
-                          <item.icon className={cn('h-4 w-4', isActive ? 'text-primary dark:text-primary-foreground' : 'text-muted-foreground/70 group-hover:text-foreground dark:group-hover:text-white')} />
+                          <item.icon className="h-4 w-4" />
                           <span>{t(item.key)}</span>
                         </Link>
                       );
@@ -536,10 +522,10 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
           </ul>
         </nav>
 
-        {/* User Section at Bottom */}
+        {/* User Section at Bottom - Legacy Style */}
         {session?.user && (
           <div className={cn(
-            "border-t border-border p-3",
+            "border-t border-[#7a2020] p-3",
             collapsed ? "flex justify-center" : ""
           )}>
             <DropdownMenu>
@@ -547,23 +533,23 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                 {collapsed ? (
                   <button className="flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity">
                     <Avatar className="h-9 w-9">
-                      <AvatarFallback className="bg-[hsl(30_43%_72%)] text-black font-semibold">
+                      <AvatarFallback className="bg-[#D7B797] text-[#601818] font-semibold">
                         {session.user.name ? getInitials(session.user.name) : 'U'}
                       </AvatarFallback>
                     </Avatar>
                   </button>
                 ) : (
-                  <button className="flex items-center gap-3 w-full p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
+                  <button className="flex items-center gap-3 w-full p-2 rounded hover:bg-[#7a2020]/50 transition-colors cursor-pointer">
                     <Avatar className="h-10 w-10">
-                      <AvatarFallback className="bg-[hsl(30_43%_72%)] text-black font-semibold text-base">
+                      <AvatarFallback className="bg-[#D7B797] text-[#601818] font-semibold text-base">
                         {session.user.name ? getInitials(session.user.name) : 'U'}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0 text-left">
-                      <p className="text-base font-medium truncate">{session.user.name}</p>
-                      <p className="text-sm text-muted-foreground truncate">{session.user.email}</p>
+                      <p className="text-base font-medium truncate text-white">{session.user.name}</p>
+                      <p className="text-sm truncate text-[#D7B797]/70">{session.user.email}</p>
                     </div>
-                    <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                    <ChevronDown className="h-5 w-5 text-[#D7B797]/70" />
                   </button>
                 )}
               </DropdownMenuTrigger>

@@ -25,6 +25,11 @@
     --dafc-green: 152 73% 27%;      /* #127749 - Forest Green */
     --dafc-green-light: 152 60% 40%;/* #2A9E6A - Light Green */
     --dafc-green-dark: 152 80% 18%; /* #095431 - Dark Green */
+
+    /* Legacy App Colors - Maroon/Red Theme */
+    --dafc-maroon: 0 50% 25%;       /* #601010 - Dark Maroon */
+    --dafc-maroon-light: 0 45% 35%; /* #822222 - Light Maroon */
+    --dafc-maroon-dark: 0 55% 18%;  /* #470D0D - Darker Maroon */
   }
 
   /* ═══════════════════════════════════════════════════════════════════════════
