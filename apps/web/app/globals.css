@@ -139,7 +139,7 @@
   }
 
   html {
-    font-size: 12px;
+    font-size: 13.2px; /* 110% of 12px for better readability */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -301,15 +301,15 @@
   }
 
   .ind-card-header {
-    @apply px-4 py-3 border-b border-border-muted;
+    @apply px-3 py-2 border-b border-border-muted;
   }
 
   .ind-card-content {
-    @apply p-4;
+    @apply p-3;
   }
 
   .ind-card-footer {
-    @apply px-4 py-3 border-t border-border-muted;
+    @apply px-3 py-2 border-t border-border-muted;
   }
 
   /* Status accent cards */
@@ -552,7 +552,7 @@
      ───────────────────────────────────────────────────────────────────────── */
 
   .kpi-card {
-    @apply bg-surface border border-border rounded-lg p-3;
+    @apply bg-surface border border-border rounded-lg p-2.5;
   }
 
   .kpi-card-status {
@@ -693,12 +693,12 @@
   }
 
   .dafc-card-header {
-    @apply px-4 py-3 border-b border-border;
+    @apply px-3 py-2 border-b border-border;
     background: linear-gradient(135deg, rgba(215, 183, 151, 0.05), transparent);
   }
 
   .dafc-card-content {
-    @apply p-4;
+    @apply p-3;
   }
 
   /* DAFC Card with Gold Accent */

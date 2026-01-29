@@ -147,8 +147,8 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
       )}>
         {/* Logo & Collapse Toggle */}
         <div className={cn(
-          "h-16 flex items-center border-b border-border",
-          collapsed ? "px-2 justify-center" : "px-4 justify-between"
+          "h-12 flex items-center border-b border-border",
+          collapsed ? "px-2 justify-center" : "px-3 justify-between"
         )}>
           {collapsed ? (
             /* Collapsed: Only show toggle button */
