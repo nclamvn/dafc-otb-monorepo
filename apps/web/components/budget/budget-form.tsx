@@ -125,27 +125,29 @@ export function BudgetForm({
               control={form.control}
               name="brandId"
               render={({ field }) => (
-                <FormRow label="Group Brand" required>
-                  <Select
-                    disabled={!!initialData?.id || isLoading}
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="bg-white border-gray-300 h-10">
-                        <SelectValue placeholder="Select brand" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {brands.map((brand) => (
-                        <SelectItem key={brand.id} value={brand.id}>
-                          {brand.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormRow>
+                <FormItem>
+                  <FormRow label="Group Brand" required>
+                    <Select
+                      disabled={!!initialData?.id || isLoading}
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="bg-white border-gray-300 h-10">
+                          <SelectValue placeholder="Select brand" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {brands.map((brand) => (
+                          <SelectItem key={brand.id} value={brand.id}>
+                            {brand.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormRow>
+                </FormItem>
               )}
             />
 
@@ -154,27 +156,29 @@ export function BudgetForm({
               control={form.control}
               name="seasonId"
               render={({ field }) => (
-                <FormRow label="Season" required>
-                  <Select
-                    disabled={!!initialData?.id || isLoading}
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="bg-white border-gray-300 h-10">
-                        <SelectValue placeholder="Select season" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {seasons.map((season) => (
-                        <SelectItem key={season.id} value={season.id}>
-                          {season.code} - {season.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormRow>
+                <FormItem>
+                  <FormRow label="Season" required>
+                    <Select
+                      disabled={!!initialData?.id || isLoading}
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="bg-white border-gray-300 h-10">
+                          <SelectValue placeholder="Select season" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {seasons.map((season) => (
+                          <SelectItem key={season.id} value={season.id}>
+                            {season.code} - {season.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormRow>
+                </FormItem>
               )}
             />
 
@@ -183,27 +187,29 @@ export function BudgetForm({
               control={form.control}
               name="locationId"
               render={({ field }) => (
-                <FormRow label="Location" required>
-                  <Select
-                    disabled={!!initialData?.id || isLoading}
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="bg-white border-gray-300 h-10">
-                        <SelectValue placeholder="Select location" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {locations.map((location) => (
-                        <SelectItem key={location.id} value={location.id}>
-                          {location.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormRow>
+                <FormItem>
+                  <FormRow label="Location" required>
+                    <Select
+                      disabled={!!initialData?.id || isLoading}
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="bg-white border-gray-300 h-10">
+                          <SelectValue placeholder="Select location" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {locations.map((location) => (
+                          <SelectItem key={location.id} value={location.id}>
+                            {location.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormRow>
+                </FormItem>
               )}
             />
 
@@ -212,16 +218,18 @@ export function BudgetForm({
               control={form.control}
               name="totalBudget"
               render={({ field }) => (
-                <FormRow label="Total Budget" required>
-                  <CurrencyInput
-                    value={field.value}
-                    onChange={(val) => field.onChange(val || 0)}
-                    placeholder="0.00"
-                    disabled={isLoading}
-                    className="bg-white border-gray-300 h-10"
-                  />
-                  <FormMessage />
-                </FormRow>
+                <FormItem>
+                  <FormRow label="Total Budget" required>
+                    <CurrencyInput
+                      value={field.value}
+                      onChange={(val) => field.onChange(val || 0)}
+                      placeholder="0.00"
+                      disabled={isLoading}
+                      className="bg-white border-gray-300 h-10"
+                    />
+                    <FormMessage />
+                  </FormRow>
+                </FormItem>
               )}
             />
 
@@ -230,25 +238,27 @@ export function BudgetForm({
               control={form.control}
               name="currency"
               render={({ field }) => (
-                <FormRow label="Currency">
-                  <Select
-                    disabled={isLoading}
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="bg-white border-gray-300 h-10">
-                        <SelectValue placeholder="Select currency" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="USD">USD</SelectItem>
-                      <SelectItem value="VND">VND</SelectItem>
-                      <SelectItem value="EUR">EUR</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormRow>
+                <FormItem>
+                  <FormRow label="Currency">
+                    <Select
+                      disabled={isLoading}
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="bg-white border-gray-300 h-10">
+                          <SelectValue placeholder="Select currency" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="USD">USD</SelectItem>
+                        <SelectItem value="VND">VND</SelectItem>
+                        <SelectItem value="EUR">EUR</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormRow>
+                </FormItem>
               )}
             />
 
@@ -257,15 +267,17 @@ export function BudgetForm({
               control={form.control}
               name="comments"
               render={({ field }) => (
-                <FormRow label="Comment">
-                  <Input
-                    placeholder="Add comment..."
-                    disabled={isLoading}
-                    className="bg-white border-gray-300 h-10"
-                    {...field}
-                  />
-                  <FormMessage />
-                </FormRow>
+                <FormItem>
+                  <FormRow label="Comment">
+                    <Input
+                      placeholder="Add comment..."
+                      disabled={isLoading}
+                      className="bg-white border-gray-300 h-10"
+                      {...field}
+                    />
+                    <FormMessage />
+                  </FormRow>
+                </FormItem>
               )}
             />
           </div>
@@ -288,17 +300,19 @@ export function BudgetForm({
                   control={form.control}
                   name="seasonalBudget"
                   render={({ field }) => (
-                    <FormRow label="Seasonal Budget">
-                      <CurrencyInput
-                        value={field.value}
-                        onChange={field.onChange}
-                        placeholder="0.00"
-                        disabled={isLoading}
-                        className="bg-white border-gray-300 h-10"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">Budget for seasonal collection</p>
-                      <FormMessage />
-                    </FormRow>
+                    <FormItem>
+                      <FormRow label="Seasonal Budget">
+                        <CurrencyInput
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="0.00"
+                          disabled={isLoading}
+                          className="bg-white border-gray-300 h-10"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Budget for seasonal collection</p>
+                        <FormMessage />
+                      </FormRow>
+                    </FormItem>
                   )}
                 />
 
@@ -307,17 +321,19 @@ export function BudgetForm({
                   control={form.control}
                   name="replenishmentBudget"
                   render={({ field }) => (
-                    <FormRow label="Replenishment">
-                      <CurrencyInput
-                        value={field.value}
-                        onChange={field.onChange}
-                        placeholder="0.00"
-                        disabled={isLoading}
-                        className="bg-white border-gray-300 h-10"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">Budget for stock replenishment</p>
-                      <FormMessage />
-                    </FormRow>
+                    <FormItem>
+                      <FormRow label="Replenishment">
+                        <CurrencyInput
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="0.00"
+                          disabled={isLoading}
+                          className="bg-white border-gray-300 h-10"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Budget for stock replenishment</p>
+                        <FormMessage />
+                      </FormRow>
+                    </FormItem>
                   )}
                 />
 

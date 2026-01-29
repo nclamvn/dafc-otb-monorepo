@@ -530,6 +530,7 @@
   "ui": {
     "collapse": "Collapse",
     "expand": "Expand",
+    "more": "More",
     "new": "New",
     "confirm": "Confirm",
     "cancel": "Cancel",
