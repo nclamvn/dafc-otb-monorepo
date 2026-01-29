@@ -61,12 +61,12 @@ import {
 import { useState } from 'react';
 import { User, CreditCard, HelpCircle } from 'lucide-react';
 
-// Main navigation items - ordered by OTB workflow
+// Main navigation items - Dashboard first, then OTB workflow
 const navigation = [
+  { key: 'dashboard', href: '/', icon: LayoutDashboard },         // Overview
   { key: 'budget', href: '/budget', icon: DollarSign },           // Step 1: Financial Budget
   { key: 'otb', href: '/otb-analysis', icon: TrendingUp },        // Step 2: OTB Analysis
   { key: 'sku', href: '/sku-proposal', icon: Package },           // Step 3: SKU Proposal
-  { key: 'dashboard', href: '/', icon: LayoutDashboard },         // Overview
   { key: 'wssi', href: '/wssi', icon: CalendarDays },             // WSSI Planning
   { key: 'approvals', href: '/approvals', icon: CheckSquare },    // Approvals
   { key: 'settings', href: '/settings', icon: Settings },         // Settings
@@ -192,16 +192,16 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className={cn("flex-1 overflow-y-auto py-4", collapsed ? "px-2" : "px-3")}>
-          <ul className="space-y-1">
+        <nav className={cn("flex-1 overflow-y-auto py-2", collapsed ? "px-2" : "px-3")}>
+          <ul className="space-y-0.5">
             {navigation.map((item) => {
               const isActive = pathname === item.href;
               const linkContent = (
                 <Link
                   href={item.href}
                   className={cn(
-                    'group flex items-center gap-3 rounded-lg text-sm font-medium transition-all duration-150 relative',
-                    collapsed ? 'px-3 py-2.5 justify-center' : 'px-3 py-2.5',
+                    'group flex items-center gap-2.5 rounded-lg text-sm font-medium transition-all duration-150 relative',
+                    collapsed ? 'px-2.5 py-1.5 justify-center' : 'px-2.5 py-1.5',
                     isActive
                       ? 'bg-primary/10 dark:bg-primary/20 text-primary'
                       : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground dark:hover:text-white'
@@ -242,7 +242,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                     <Link
                       href="/master-data/brands"
                       className={cn(
-                        'group flex items-center justify-center px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150',
+                        'group flex items-center justify-center px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-150',
                         pathname.startsWith('/master-data')
                           ? 'bg-primary/10 dark:bg-primary/20 text-primary'
                           : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground dark:hover:text-white'
@@ -263,7 +263,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                   <CollapsibleTrigger asChild>
                     <button
                       className={cn(
-                        'group flex w-full items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 relative',
+                        'group flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 relative',
                         pathname.startsWith('/master-data')
                           ? 'bg-primary/10 dark:bg-primary/20 text-primary'
                           : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground dark:hover:text-white'
@@ -285,7 +285,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                       />
                     </button>
                   </CollapsibleTrigger>
-                  <CollapsibleContent className="mt-1 space-y-1 pl-4">
+                  <CollapsibleContent className="mt-0.5 space-y-0.5 pl-4">
                     {masterDataItems.map((item) => {
                       const isActive = pathname === item.href;
                       return (
@@ -293,7 +293,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                           key={item.key}
                           href={item.href}
                           className={cn(
-                            'group flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150',
+                            'group flex items-center gap-2.5 px-2.5 py-1 rounded-lg text-sm font-medium transition-all duration-150',
                             isActive
                               ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground'
                               : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground/80 dark:hover:text-white'
@@ -317,7 +317,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                     <Link
                       href="/analytics"
                       className={cn(
-                        'group flex items-center justify-center px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150',
+                        'group flex items-center justify-center px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-150',
                         pathname.startsWith('/analytics')
                           ? 'bg-primary/10 dark:bg-primary/20 text-primary'
                           : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground dark:hover:text-white'
@@ -338,7 +338,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                   <CollapsibleTrigger asChild>
                     <button
                       className={cn(
-                        'group flex w-full items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 relative',
+                        'group flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 relative',
                         pathname.startsWith('/analytics')
                           ? 'bg-primary/10 dark:bg-primary/20 text-primary'
                           : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground dark:hover:text-white'
@@ -360,7 +360,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                       />
                     </button>
                   </CollapsibleTrigger>
-                  <CollapsibleContent className="mt-1 space-y-1 pl-4">
+                  <CollapsibleContent className="mt-0.5 space-y-0.5 pl-4">
                     {analyticsItems.map((item) => {
                       const isActive = pathname === item.href;
                       return (
@@ -368,7 +368,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                           key={item.key}
                           href={item.href}
                           className={cn(
-                            'group flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150',
+                            'group flex items-center gap-2.5 px-2.5 py-1 rounded-lg text-sm font-medium transition-all duration-150',
                             isActive
                               ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground'
                               : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground/80 dark:hover:text-white'
@@ -392,7 +392,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                     <Link
                       href="/ai-assistant"
                       className={cn(
-                        'group flex items-center justify-center px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150',
+                        'group flex items-center justify-center px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-150',
                         (pathname.startsWith('/ai-') || pathname === '/predictive-alerts')
                           ? 'bg-primary/10 dark:bg-primary/20 text-primary'
                           : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground dark:hover:text-white'
@@ -413,7 +413,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                   <CollapsibleTrigger asChild>
                     <button
                       className={cn(
-                        'group flex w-full items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 relative',
+                        'group flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 relative',
                         (pathname.startsWith('/ai-') || pathname === '/predictive-alerts')
                           ? 'bg-primary/10 dark:bg-primary/20 text-primary'
                           : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground dark:hover:text-white'
@@ -435,7 +435,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                       />
                     </button>
                   </CollapsibleTrigger>
-                  <CollapsibleContent className="mt-1 space-y-1 pl-4">
+                  <CollapsibleContent className="mt-0.5 space-y-0.5 pl-4">
                     {aiItems.map((item) => {
                       const isActive = pathname === item.href;
                       return (
@@ -443,7 +443,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                           key={item.key}
                           href={item.href}
                           className={cn(
-                            'group flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150',
+                            'group flex items-center gap-2.5 px-2.5 py-1 rounded-lg text-sm font-medium transition-all duration-150',
                             isActive
                               ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground'
                               : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground/80 dark:hover:text-white'
@@ -467,7 +467,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                     <Link
                       href="/clearance"
                       className={cn(
-                        'group flex items-center justify-center px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150',
+                        'group flex items-center justify-center px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-150',
                         (pathname === '/clearance' || pathname === '/replenishment' || pathname === '/forecasting')
                           ? 'bg-primary/10 dark:bg-primary/20 text-primary'
                           : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground dark:hover:text-white'
@@ -488,7 +488,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                   <CollapsibleTrigger asChild>
                     <button
                       className={cn(
-                        'group flex w-full items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 relative',
+                        'group flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 relative',
                         (pathname === '/clearance' || pathname === '/replenishment' || pathname === '/forecasting')
                           ? 'bg-primary/10 dark:bg-primary/20 text-primary'
                           : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground dark:hover:text-white'
@@ -510,7 +510,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                       />
                     </button>
                   </CollapsibleTrigger>
-                  <CollapsibleContent className="mt-1 space-y-1 pl-4">
+                  <CollapsibleContent className="mt-0.5 space-y-0.5 pl-4">
                     {operationsItems.map((item) => {
                       const isActive = pathname === item.href;
                       return (
@@ -518,7 +518,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse }: SidebarProps) {
                           key={item.key}
                           href={item.href}
                           className={cn(
-                            'group flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150',
+                            'group flex items-center gap-2.5 px-2.5 py-1 rounded-lg text-sm font-medium transition-all duration-150',
                             isActive
                               ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground'
                               : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground/80 dark:hover:text-white'
