@@ -61,13 +61,15 @@ import {
 import { useState } from 'react';
 import { User, CreditCard, HelpCircle } from 'lucide-react';
 
+// Main navigation items - ordered by OTB workflow
 const navigation = [
-  { key: 'dashboard', href: '/', icon: LayoutDashboard },
-  { key: 'budget', href: '/budget', icon: DollarSign },
-  { key: 'otb', href: '/otb-analysis', icon: TrendingUp },
-  { key: 'wssi', href: '/wssi', icon: CalendarDays },
-  { key: 'sku', href: '/sku-proposal', icon: Package },
-  { key: 'approvals', href: '/approvals', icon: CheckSquare },
+  { key: 'budget', href: '/budget', icon: DollarSign },           // Step 1: Financial Budget
+  { key: 'otb', href: '/otb-analysis', icon: TrendingUp },        // Step 2: OTB Analysis
+  { key: 'sku', href: '/sku-proposal', icon: Package },           // Step 3: SKU Proposal
+  { key: 'dashboard', href: '/', icon: LayoutDashboard },         // Overview
+  { key: 'wssi', href: '/wssi', icon: CalendarDays },             // WSSI Planning
+  { key: 'approvals', href: '/approvals', icon: CheckSquare },    // Approvals
+  { key: 'settings', href: '/settings', icon: Settings },         // Settings
 ];
 
 const masterDataItems = [

@@ -53,8 +53,8 @@
   },
   "navigation": {
     "dashboard": "Dashboard",
-    "budget": "Budget",
-    "otb": "OTB Plan",
+    "budget": "Financial Budget",
+    "otb": "OTB Analysis",
     "wssi": "WSSI",
     "sku": "SKU Proposal",
     "approvals": "Approvals",

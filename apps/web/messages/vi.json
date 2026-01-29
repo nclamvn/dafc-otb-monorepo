@@ -53,8 +53,8 @@
   },
   "navigation": {
     "dashboard": "Bảng điều khiển",
-    "budget": "Ngân sách",
-    "otb": "Kế hoạch OTB",
+    "budget": "Ngân sách tài chính",
+    "otb": "Phân tích OTB",
     "wssi": "WSSI",
     "sku": "Đề xuất SKU",
     "approvals": "Phê duyệt",
